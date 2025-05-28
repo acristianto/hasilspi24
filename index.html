@@ -3,542 +3,208 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard SPI 2024</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-<script>
-var rawData = [], radarChart, barChart, lineChartHistorical, lineChartFaktorKoreksi;
-
-fetch("https://raw.githubusercontent.com/timotiushps/hasilspi24/main/agregat_tracking_agregat.csv")
-  .then(response => response.text())
-  .then(csvText => {
-    Papa.parse(csvText, {
-      header: true,
-      skipEmptyLines: true,
-      complete: function(results) {
-        rawData = results.data.filter(r => r["data.instansi"] && r["Index_name"] && r["Value24"]);
-        populateInstansiOptions();
-        document.getElementById("loadingSpinner").classList.add("d-none");
-      }
-    });
-  })
-  .catch(error => {
-    console.error("Gagal memuat data:", error);
-    document.getElementById("loadingSpinner").innerHTML = "<p class='text-danger'>Gagal memuat data dari GitHub.</p>";
-  });
-</script>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js">
-function renderRadarChart(data) {
-  const ctx = document.getElementById("radarChart").getContext("2d");
-  if (radarChart && typeof radarChart.destroy === "function") radarChart.destroy();
-
-  const avg = data.reduce((a, b) => a + b, 0) / data.length;
-  const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-
-  if (avg >= 78) {
-    gradient.addColorStop(0, "rgba(0,200,0,0.4)");
-    gradient.addColorStop(1, "rgba(0,150,0,0.2)");
-  } else if (avg >= 73) {
-    gradient.addColorStop(0, "rgba(255,200,0,0.4)");
-    gradient.addColorStop(1, "rgba(200,150,0,0.2)");
-  } else {
-    gradient.addColorStop(0, "rgba(200,0,0,0.4)");
-    gradient.addColorStop(1, "rgba(150,0,0,0.2)");
-  }
-
-  radarChart = new Chart(ctx, {
-    type: "radar",
-    data: {
-      labels: ["Internal", "Eksternal", "Eksper"],
-      datasets: [{
-        label: "Agregat",
-        data: data,
-        backgroundColor: gradient,
-        borderColor: "#333",
-        pointBackgroundColor: "#000"
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: ctx => ctx.label + ": " + ctx.raw.toFixed(2)
-          }
-        }
-      },
-      scales: {
-        r: {
-          suggestedMin: 0,
-          suggestedMax: 100
-        }
-      }
-    }
-  });
-}
-
-</script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2">
-function renderRadarChart(data) {
-  const ctx = document.getElementById("radarChart").getContext("2d");
-  if (radarChart && typeof radarChart.destroy === "function") radarChart.destroy();
-
-  const avg = data.reduce((a, b) => a + b, 0) / data.length;
-  const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-
-  if (avg >= 78) {
-    gradient.addColorStop(0, "rgba(0,200,0,0.4)");
-    gradient.addColorStop(1, "rgba(0,150,0,0.2)");
-  } else if (avg >= 73) {
-    gradient.addColorStop(0, "rgba(255,200,0,0.4)");
-    gradient.addColorStop(1, "rgba(200,150,0,0.2)");
-  } else {
-    gradient.addColorStop(0, "rgba(200,0,0,0.4)");
-    gradient.addColorStop(1, "rgba(150,0,0,0.2)");
-  }
-
-  radarChart = new Chart(ctx, {
-    type: "radar",
-    data: {
-      labels: ["Internal", "Eksternal", "Eksper"],
-      datasets: [{
-        label: "Agregat",
-        data: data,
-        backgroundColor: gradient,
-        borderColor: "#333",
-        pointBackgroundColor: "#000"
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: ctx => ctx.label + ": " + ctx.raw.toFixed(2)
-          }
-        }
-      },
-      scales: {
-        r: {
-          suggestedMin: 0,
-          suggestedMax: 100
-        }
-      }
-    }
-  });
-}
-
-</script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js">
-function renderRadarChart(data) {
-  const ctx = document.getElementById("radarChart").getContext("2d");
-  if (radarChart && typeof radarChart.destroy === "function") radarChart.destroy();
-
-  const avg = data.reduce((a, b) => a + b, 0) / data.length;
-  const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-
-  if (avg >= 78) {
-    gradient.addColorStop(0, "rgba(0,200,0,0.4)");
-    gradient.addColorStop(1, "rgba(0,150,0,0.2)");
-  } else if (avg >= 73) {
-    gradient.addColorStop(0, "rgba(255,200,0,0.4)");
-    gradient.addColorStop(1, "rgba(200,150,0,0.2)");
-  } else {
-    gradient.addColorStop(0, "rgba(200,0,0,0.4)");
-    gradient.addColorStop(1, "rgba(150,0,0,0.2)");
-  }
-
-  radarChart = new Chart(ctx, {
-    type: "radar",
-    data: {
-      labels: ["Internal", "Eksternal", "Eksper"],
-      datasets: [{
-        label: "Agregat",
-        data: data,
-        backgroundColor: gradient,
-        borderColor: "#333",
-        pointBackgroundColor: "#000"
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: ctx => ctx.label + ": " + ctx.raw.toFixed(2)
-          }
-        }
-      },
-      scales: {
-        r: {
-          suggestedMin: 0,
-          suggestedMax: 100
-        }
-      }
-    }
-  });
-}
-
-</script>
+  <title>Dashboard Indeks SPI 2024</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@0.7.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+    .angka-indeks { font-size: 1.5rem; font-weight: bold; }
+    .angka-agregat { font-size: 2rem; font-weight: bold; }
+    .hijau { color: green; } .kuning { color: orange; } .merah { color: red; }
+  </style>
 </head>
 <body style="background-color:white">
 <div class="container py-4">
-  <header class="mb-4 d-flex justify-content-between align-items-center">
-    <img src="https://elhkpn.kpk.go.id/portal-assets/img/image2.jpeg" style="height:50px;" />
-    <h1 class="text-center flex-grow-1">Dashboard Indeks Hasil SPI 2024</h1>
-    <img src="https://spi.kpk.go.id/img/logo-spi.d5368d4c.png" style="height:50px;" />
-  </header>
-
-  <div id="loadingSpinner" class="text-center my-4 d-none">
-    <div class="spinner-border text-primary" role="status"></div>
-    <p class="mt-2 text-muted">Memuat data...</p>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <img src="https://elhkpn.kpk.go.id/portal-assets/img/image2.jpeg" style="height:50px;">
+    <h3 class="text-center flex-grow-1">Dashboard Indeks Hasil SPI 2024</h3>
+    <img src="https://spi.kpk.go.id/img/logo-spi.d5368d4c.png" style="height:50px;">
   </div>
 
-  
-
   <div class="mb-3">
-    <label for="instansiInput" class="form-label">Ketik Nama Instansi:</label>
-    <input class="form-control" list="instansiList" id="instansiInput" placeholder="Cari...">
+    <label for="instansiInput" class="form-label">Nama Instansi:</label>
+    <input class="form-control" list="instansiList" id="instansiInput" placeholder="Ketik nama instansi...">
     <datalist id="instansiList"></datalist>
   </div>
 
-  <div class="card p-4 mb-4 shadow-sm text-center">
-    <h4 id="summaryTitle" class="mb-4 fw-semibold text-center"></h4>
-    <div class="d-flex justify-content-center align-items-end flex-wrap gap-3">
-      <div class="text-center">
-        <div id="agregatVal" class="fs-1 fw-bold">-</div>
-        <div class="small text-muted">(Agregat)</div>
-      </div>
-      <div class="fs-4">=</div>
-      <div class="text-center">
-        <div id="internalVal" class="fs-3 fw-bold">-</div>
-        <div class="small text-muted">(Internal)</div>
-      </div>
-      <div class="fs-4">+</div>
-      <div class="text-center">
-        <div id="eksternalVal" class="fs-3 fw-bold">-</div>
-        <div class="small text-muted">(Eksternal)</div>
-      </div>
-      <div class="fs-4">+</div>
-      <div class="text-center">
-        <div id="eksperVal" class="fs-3 fw-bold">-</div>
-        <div class="small text-muted">(Eksper)</div>
-      </div>
-      <div class="fs-4">-</div>
-      <div class="text-center">
-        <div id="faktorVal" class="fs-3 fw-bold">-</div>
-        <div class="small text-muted">(Faktor Koreksi)</div>
-      </div>
-    </div>
+  <div class="mb-4">
+    <label for="yearSelect" class="form-label">Pilih Tahun:</label>
+    <select id="yearSelect" class="form-select">
+      <option value="24">2024</option>
+      <option value="23">2023</option>
+      <option value="22">2022</option>
+      <option value="21">2021</option>
+    </select>
   </div>
 
-  <div class="row">
-    <div class="col-md-6 mb-4">
-      <h5 class="text-center">Indeks Agregat (Sebelum Faktor Koreksi)</h5>
-      <canvas id="radarChart"></canvas>
-    </div>
-    <div class="col-md-6 mb-4">
-      <h5 class="text-center mb-2">Faktor Koreksi</h5>
-      <canvas id="barChart"></canvas>
-    </div>
-    <div class="col-12 mb-4">
-      <h5 class="text-center mb-2">Tren Indeks Agregat, Internal, Eksternal, Eksper (2021–2024)</h5>
-      <canvas id="lineChartHistorical"></canvas>
-    </div>
-    <div class="col-12 mb-4">
-      <h5 class="text-center mb-2">Tracking Faktor Koreksi (Prevalensi Korupsi & Integritas SPI)</h5>
-      <canvas id="lineChartFaktorKoreksi"></canvas>
-    </div>
+  <div id="summaryBox" class="text-center mb-4"></div>
+
+  <div class="row mb-4">
+    <div class="col-md-6"><h6 class="text-center">Indeks Agregat (Sebelum Faktor Koreksi)</h6><canvas id="radarChart" width="400" height="400"></canvas></div>
+    <div class="col-md-6"><h6 class="text-center">Faktor Koreksi</h6><canvas id="barChart"></canvas></div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-12"><h6 class="text-center">Tren Indeks (2021–2024)</h6><canvas id="lineChartIndeks"></canvas></div>
+    <div class="col-12"><h6 class="text-center">Tren Faktor Koreksi (2021–2024)</h6><canvas id="lineChartFaktor"></canvas></div>
   </div>
 </div>
 
+<footer class="text-center small text-muted mt-5 mb-3">v2805241457<br>© Tim SPI KPK RI</footer>
+
 <script>
+let rawData = [], radarChart, barChart, lineChartIndeks, lineChartFaktor;
 
-
-document.getElementById("csvFile").addEventListener("change", function(e) {
-  const file = e.target.files[0];
-  if (file) {
-    document.getElementById("loadingSpinner").classList.remove("d-none");
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: function(results) {
-        rawData = results.data.filter(r => r["data.instansi"] && r["Index_name"] && r["Value24"]);
-        populateInstansiOptions();
-        document.getElementById("loadingSpinner").classList.add("d-none");
-      }
-    });
-  }
-});
-
-function populateInstansiOptions() {
-  const list = document.getElementById("instansiList");
-  list.innerHTML = "";
-  const input = document.getElementById("instansiInput");
-  const instansiList = [...new Set(rawData.map(r => r["data.instansi"]))];
-  instansiList.forEach(name => {
-    const option = document.createElement("option");
-    option.value = name;
-    list.appendChild(option);
-  });
-  input.value = "Seluruh K/L/PD Peserta SPI 2024";
-  input.addEventListener("change", updateDashboard);
-  updateDashboard();
+function getColor(value) {
+  if (value >= 78) return 'hijau';
+  if (value >= 73) return 'kuning';
+  return 'merah';
 }
 
 function updateDashboard() {
-  const selected = document.getElementById("instansiInput").value;
-  const filtered = rawData.filter(r => r["data.instansi"] === selected);
-  if (filtered.length === 0) return;
+  const instansi = document.getElementById("instansiInput").value;
+  const year = document.getElementById("yearSelect").value;
+  const filtered = rawData.filter(d => d["data.instansi"] === instansi);
 
-  const get = name => {
-    const found = filtered.find(d => d["Index_name"] === name);
-    return found ? parseFloat(found["Value24"]) : null;
+  const getVal = name => {
+    const entry = filtered.find(d => d["Index_name"] === name);
+    return entry ? parseFloat(entry["Value" + year]) : null;
   };
 
-  const vals = {
-    agregat: get("Agregat"),
-    internal: get("Internal"),
-    eksternal: get("Eksternal"),
-    eksper: get("Eksper"),
-    faktor: get("Faktor Koreksi (weighted)"),
-    prevalensi: get("Prevalensi Korupsi"),
-    integritas: get("Integritas Pelaksanaan SPI")
+  const getValsOverYears = name => [21, 22, 23, 24].map(y => {
+    const entry = rawData.find(d => d["data.instansi"] === instansi && d["Index_name"] === name);
+    return entry && !isNaN(parseFloat(entry["Value" + y])) ? parseFloat(entry["Value" + y]) : 0;
+  });
+
+  const nilai = {
+    agregat: getVal("Agregat"),
+    internal: getVal("Internal"),
+    eksternal: getVal("Eksternal"),
+    eksper: getVal("Eksper"),
+    faktor: getVal("Faktor Koreksi (weighted)"),
+    prevalensi: getVal("Prevalensi Korupsi"),
+    integritas_spi: getVal("Integritas Pelaksanaan SPI")
   };
 
-  document.getElementById("summaryTitle").textContent = "Indeks Integritas " + selected;
-  const colorMap = val => val > 78 ? "green" : val >= 73 ? "orange" : "red";
-  ["agregat", "internal", "eksternal", "eksper", "faktor"].forEach(k => {
-    const el = document.getElementById(k + "Val");
-    el.textContent = vals[k]?.toFixed(2) || "-";
-    if (vals[k] !== null) el.style.color = colorMap(vals[k]);
-  });
+  document.getElementById("summaryBox").innerHTML = `
+    <div class="d-flex justify-content-center align-items-end flex-wrap gap-3">
+      <div class="text-center"><div class="angka-agregat ${getColor(nilai.agregat)}">${nilai.agregat ?? "-"}</div><div class="small text-muted">(Agregat)</div></div>
+      <div class="fs-4">=</div>
+      <div class="text-center"><div class="angka-indeks ${getColor(nilai.internal)}">${nilai.internal ?? "-"}</div><div class="small text-muted">(Internal)</div></div>
+      <div class="fs-4">+</div>
+      <div class="text-center"><div class="angka-indeks ${getColor(nilai.eksternal)}">${nilai.eksternal ?? "-"}</div><div class="small text-muted">(Eksternal)</div></div>
+      <div class="fs-4">+</div>
+      <div class="text-center"><div class="angka-indeks ${getColor(nilai.eksper)}">${nilai.eksper ?? "-"}</div><div class="small text-muted">(Eksper)</div></div>
+      <div class="fs-4">-</div>
+      <div class="text-center"><div class="angka-indeks ${getColor(nilai.faktor)}">${nilai.faktor ?? "-"}</div><div class="small text-muted">(Faktor Koreksi)</div></div>
+    </div>`;
 
-  renderRadarChart([vals.internal, vals.eksternal, vals.eksper]);
-  renderStackedBar(vals.prevalensi, vals.integritas);
-  renderHistoricalLineChart(filtered);
-  renderFaktorKoreksiLineChart(filtered);
-}
-
-
-
-
-
-
-
-renderRadarChart = function(data) {
-  const ctx = document.getElementById("radarChart").getContext("2d");
-  if (radarChart && typeof radarChart.destroy === "function") radarChart.destroy();
-
-  radarChart = new Chart(ctx, {
+  if (radarChart) radarChart.destroy();
+  radarChart = new Chart(document.getElementById("radarChart"), {
     type: "radar",
     data: {
       labels: ["Internal", "Eksternal", "Eksper"],
       datasets: [{
         label: "Agregat",
-        data: data,
-        backgroundColor: gradient,
-        borderColor: "#333",
-        pointBackgroundColor: "#000"
+        data: [nilai.internal, nilai.eksternal, nilai.eksper],
+        backgroundColor: "rgba(0, 150, 0, 0.2)",
+        borderColor: "#333"
       }]
     },
     options: {
       responsive: true,
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: ctx => ctx.label + ": " + ctx.raw.toFixed(2)
-          }
-        }
-      },
-      scales: { r: { suggestedMin: 0, suggestedMax: 100 } }
+      legend: { display: true },
+      scale: { ticks: { beginAtZero: true, max: 100 } }
     }
   });
-}
 
-function renderRadarChart(data) {
-  const ctx = document.getElementById("radarChart").getContext("2d");
-  if (radarChart && typeof radarChart.destroy === "function") radarChart.destroy();
-
-  const avg = data.reduce((a, b) => a + b, 0) / data.length;
-  const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-
-  if (avg >= 78) {
-    gradient.addColorStop(0, "rgba(0,200,0,0.4)");
-    gradient.addColorStop(1, "rgba(0,150,0,0.2)");
-  } else if (avg >= 73) {
-    gradient.addColorStop(0, "rgba(255,200,0,0.4)");
-    gradient.addColorStop(1, "rgba(200,150,0,0.2)");
-  } else {
-    gradient.addColorStop(0, "rgba(200,0,0,0.4)");
-    gradient.addColorStop(1, "rgba(150,0,0,0.2)");
-  }
-
-  radarChart = new Chart(ctx, {
-    type: "radar",
-    data: {
-      labels: ["Internal", "Eksternal", "Eksper"],
-      datasets: [{
-        label: "Agregat",
-        data: data,
-        backgroundColor: gradient,
-        borderColor: "#333",
-        pointBackgroundColor: "#000"
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: ctx => ctx.label + ": " + ctx.raw.toFixed(2)
-          }
-        }
-      },
-      scales: {
-        r: {
-          suggestedMin: 0,
-          suggestedMax: 100
-        }
-      }
-    }
-  });
-}
-
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2">
-function renderRadarChart(data) {
-  const ctx = document.getElementById("radarChart").getContext("2d");
-  if (radarChart && typeof radarChart.destroy === "function") radarChart.destroy();
-
-  const avg = data.reduce((a, b) => a + b, 0) / data.length;
-  const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-
-  if (avg >= 78) {
-    gradient.addColorStop(0, "rgba(0,200,0,0.4)");
-    gradient.addColorStop(1, "rgba(0,150,0,0.2)");
-  } else if (avg >= 73) {
-    gradient.addColorStop(0, "rgba(255,200,0,0.4)");
-    gradient.addColorStop(1, "rgba(200,150,0,0.2)");
-  } else {
-    gradient.addColorStop(0, "rgba(200,0,0,0.4)");
-    gradient.addColorStop(1, "rgba(150,0,0,0.2)");
-  }
-
-  radarChart = new Chart(ctx, {
-    type: "radar",
-    data: {
-      labels: ["Internal", "Eksternal", "Eksper"],
-      datasets: [{
-        label: "Agregat",
-        data: data,
-        backgroundColor: gradient,
-        borderColor: "#333",
-        pointBackgroundColor: "#000"
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: ctx => ctx.label + ": " + ctx.raw.toFixed(2)
-          }
-        }
-      },
-      scales: {
-        r: {
-          suggestedMin: 0,
-          suggestedMax: 100
-        }
-      }
-    }
-  });
-}
-
-</script>
-<script>
-function renderStackedBar(prevalensi, integritas) {
-  const ctx = document.getElementById("barChart").getContext("2d");
-  if (window.barChart && typeof window.barChart.destroy === "function") window.barChart.destroy();
-  window.barChart = new Chart(ctx, {
+  if (barChart) barChart.destroy();
+  barChart = new Chart(document.getElementById("barChart"), {
     type: "bar",
     data: {
       labels: ["Faktor Koreksi"],
       datasets: [
-        { label: "Prevalensi Korupsi", data: [prevalensi], backgroundColor: "#f87979" },
-        { label: "Integritas Pelaksanaan SPI", data: [integritas], backgroundColor: "#36a2eb" }
+        { label: "Prevalensi Korupsi", data: [nilai.prevalensi], backgroundColor: "#f66" },
+        { label: "Integritas SPI", data: [nilai.integritas_spi], backgroundColor: "#69f" }
       ]
     },
     options: {
       responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => ctx.dataset.label + ": " + ctx.raw.toFixed(2)
-          }
-        },
-        datalabels: {
-          anchor: 'end',
-          align: 'top',
-          font: { size: 10 },
-          formatter: v => v.toFixed(1)
-        }
-      },
+      legend: { display: false },
       scales: {
-        x: { stacked: true, display: false },
-        y: { stacked: true, beginAtZero: true, max: 20, display: false }
+        xAxes: [{ stacked: true, display: false }],
+        yAxes: [{ stacked: true, display: false, ticks: { beginAtZero: true, max: 20 } }]
       }
-    },
-    plugins: [ChartDataLabels]
+    }
   });
-}
 
-function renderHistoricalLineChart(filtered) {
-  const komponen = ["Agregat", "Internal", "Eksternal", "Eksper"];
-  const warna = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"];
-  const datasets = komponen.map((k, i) => {
-    const found = filtered.find(d => d["Index_name"] === k);
-    return {
-      label: k,
-      data: [21,22,23,24].map(y => parseFloat(found["Value" + y]) || 0),
-      borderColor: warna[i],
-      backgroundColor: warna[i],
-      tension: 0.3
-    };
-  });
-  const ctx = document.getElementById("lineChartHistorical").getContext("2d");
-  if (window.lineChartHistorical && typeof window.lineChartHistorical.destroy === "function") window.lineChartHistorical.destroy();
-  window.lineChartHistorical = new Chart(ctx, {
+  if (lineChartIndeks) lineChartIndeks.destroy();
+  lineChartIndeks = new Chart(document.getElementById("lineChartIndeks"), {
+    plugins: [Chart.plugins.getAll().find(p => p.id === "datalabels")],
     type: "line",
     data: {
       labels: ["2021", "2022", "2023", "2024"],
-      datasets: datasets
+      datasets: [
+        { label: "Agregat", data: getValsOverYears("Agregat"), borderColor: "#000", fill: false },
+        { label: "Internal", data: getValsOverYears("Internal"), borderColor: "#28a745", fill: false },
+        { label: "Eksternal", data: getValsOverYears("Eksternal"), borderColor: "#ffc107", fill: false },
+        { label: "Eksper", data: getValsOverYears("Eksper"), borderColor: "#dc3545", fill: false }
+      ]
     },
     options: {
       responsive: true,
+      legend: { display: false },
       plugins: {
-        tooltip: { mode: 'index', intersect: false },
         datalabels: {
           anchor: 'end',
           align: 'top',
-          font: { size: 10 },
+          font: { weight: 'bold' },
           formatter: v => v.toFixed(1)
         }
       },
       scales: {
-        y: { min: 40, max: 100 }
+        xAxes: [{ display: true }],
+        yAxes: [{ display: true, ticks: { min: 40, max: 100 } }]
       }
-    },
-    plugins: [ChartDataLabels]
+    }
   });
+
+  if (lineChartFaktor) lineChartFaktor.destroy();
+  const prevArray = getValsOverYears("Prevalensi Korupsi");
+const spiArray = getValsOverYears("Integritas Pelaksanaan SPI");
+console.log("Prevalensi:", prevArray, "Integritas SPI:", spiArray);
+renderFaktorKoreksiLineChart(filtered);
 }
 
+fetch("https://raw.githubusercontent.com/timotiushps/hasilspi24/main/agregat_tracking_agregat.csv")
+  .then(res => res.text())
+  .then(csv => {
+    Papa.parse(csv, {
+      header: true,
+      skipEmptyLines: true,
+      complete: function(results) {
+        rawData = results.data;
+        const instansis = [...new Set(rawData.map(r => r["data.instansi"]))];
+        const list = document.getElementById("instansiList");
+        instansis.forEach(i => {
+          const opt = document.createElement("option");
+          opt.value = i;
+          list.appendChild(opt);
+        });
+        document.getElementById("instansiInput").value = "Seluruh K/L/PD Peserta SPI 2024";
+        updateDashboard();
+      }
+    });
+  });
+
+document.getElementById("instansiInput").addEventListener("change", updateDashboard);
+document.getElementById("yearSelect").addEventListener("change", updateDashboard);
+</script>
+
+
+<script>
 function renderFaktorKoreksiLineChart(filtered) {
   const found1 = filtered.find(d => d["Index_name"] === "Prevalensi Korupsi");
   const found2 = filtered.find(d => d["Index_name"] === "Integritas Pelaksanaan SPI");
@@ -547,20 +213,20 @@ function renderFaktorKoreksiLineChart(filtered) {
       label: "Prevalensi Korupsi",
       data: [21,22,23,24].map(y => parseFloat(found1["Value" + y]) || 0),
       borderColor: "#f87979",
-      backgroundColor: "#f87979",
+      fill: false,
       tension: 0.3
     },
     {
       label: "Integritas Pelaksanaan SPI",
       data: [21,22,23,24].map(y => parseFloat(found2["Value" + y]) || 0),
       borderColor: "#36a2eb",
-      backgroundColor: "#36a2eb",
+      fill: false,
       tension: 0.3
     }
   ];
-  const ctx = document.getElementById("lineChartFaktorKoreksi").getContext("2d");
-  if (window.lineChartFaktorKoreksi && typeof window.lineChartFaktorKoreksi.destroy === "function") window.lineChartFaktorKoreksi.destroy();
-  window.lineChartFaktorKoreksi = new Chart(ctx, {
+  const ctx = document.getElementById("lineChartFaktor").getContext("2d");
+  if (window.lineChartFaktor && typeof window.lineChartFaktor.destroy === "function") window.lineChartFaktor.destroy();
+  window.lineChartFaktor = new Chart(ctx, {
     type: "line",
     data: {
       labels: ["2021", "2022", "2023", "2024"],
@@ -573,7 +239,7 @@ function renderFaktorKoreksiLineChart(filtered) {
         datalabels: {
           anchor: 'end',
           align: 'top',
-          font: { size: 10 },
+          font: { size: 10, weight: 'bold' },
           formatter: v => v.toFixed(1)
         }
       },
@@ -584,57 +250,6 @@ function renderFaktorKoreksiLineChart(filtered) {
     plugins: [ChartDataLabels]
   });
 }
-
-function renderRadarChart(data) {
-  const ctx = document.getElementById("radarChart").getContext("2d");
-  if (radarChart && typeof radarChart.destroy === "function") radarChart.destroy();
-
-  const avg = data.reduce((a, b) => a + b, 0) / data.length;
-  const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-
-  if (avg >= 78) {
-    gradient.addColorStop(0, "rgba(0,200,0,0.4)");
-    gradient.addColorStop(1, "rgba(0,150,0,0.2)");
-  } else if (avg >= 73) {
-    gradient.addColorStop(0, "rgba(255,200,0,0.4)");
-    gradient.addColorStop(1, "rgba(200,150,0,0.2)");
-  } else {
-    gradient.addColorStop(0, "rgba(200,0,0,0.4)");
-    gradient.addColorStop(1, "rgba(150,0,0,0.2)");
-  }
-
-  radarChart = new Chart(ctx, {
-    type: "radar",
-    data: {
-      labels: ["Internal", "Eksternal", "Eksper"],
-      datasets: [{
-        label: "Agregat",
-        data: data,
-        backgroundColor: gradient,
-        borderColor: "#333",
-        pointBackgroundColor: "#000"
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: ctx => ctx.label + ": " + ctx.raw.toFixed(2)
-          }
-        }
-      },
-      scales: {
-        r: {
-          suggestedMin: 0,
-          suggestedMax: 100
-        }
-      }
-    }
-  });
-}
-
 </script>
 </body>
 </html>
-
