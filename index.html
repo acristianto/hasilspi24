@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -51,24 +50,6 @@
     <div class="col-12"><h6 class="text-center">Tren Faktor Koreksi (2021–2024)</h6><canvas id="lineChartFaktor"></canvas></div>
   </div>
 </div>
-
-<footer class="text-center small text-muted mt-5 mb-3">v2805241457<br>© Tim SPI KPK RI
-<div class="container mt-5 mb-4">
-  <h5 class="text-center mb-3">Detail Komponen Indeks</h5>
-  <div class="d-flex justify-content-center mb-3">
-    <button class="btn btn-outline-primary mx-1" id="btnInternal" type="button">Internal</button>
-    <button class="btn btn-outline-success mx-1" id="btnEksternal" type="button">Eksternal</button>
-    <button class="btn btn-outline-warning mx-1" id="btnEksper" type="button">Eksper</button>
-  </div>
-  <div class="row mb-4">
-    <div class="col-md-6 offset-md-3">
-      <canvas id="radarKomponenChart" width="350" height="350"></canvas>
-    </div>
-  </div>
-  <div id="tabelDetailKomponen"></div>
-</div>
-
-</footer>
 
 <script>
 let rawData = [], radarChart, barChart, lineChartIndeks, lineChartFaktor;
@@ -390,6 +371,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   tampilkanTabelRadarKomponen();
 });
 </script>
+
+  <footer class="text-center small text-muted mt-5 mb-3">v1.2805252315<br>© Tim SPI KPK RI
+<div class="container mt-5 mb-4">
+  <h5 class="text-center mb-3">Detail Komponen Indeks</h5>
+  <div class="d-flex justify-content-center mb-3">
+    <button class="btn btn-outline-primary mx-1" id="btnInternal" type="button">Internal</button>
+    <button class="btn btn-outline-success mx-1" id="btnEksternal" type="button">Eksternal</button>
+    <button class="btn btn-outline-warning mx-1" id="btnEksper" type="button">Eksper</button>
+  </div>
+  <div class="row mb-4">
+    <div class="col-md-6 offset-md-3">
+      <canvas id="radarKomponenChart" width="350" height="350"></canvas>
+    </div>
+  </div>
+  <div id="tabelDetailKomponen"></div>
+</div>
+
+</footer>
 </body>
 </html>
 
