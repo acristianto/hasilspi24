@@ -48,7 +48,7 @@
 </head>
 <body style="background-color:white">
 
-<!-- Tombol Modern (Sudah Tidak Membuka Tab Baru) -->
+<!-- Tombol Modern (tidak membuka tab baru) -->
 <div class="container">
   <div class="top-buttons">
     <a href="https://timotiushps.github.io/dashboardresponratespi24/" class="response-rate-btn">Response Rate</a>
@@ -105,13 +105,15 @@
     </div>
   </div>
   <div id="tabelDetailKomponen"></div>
-
-  <!-- Pilihan Unit Kerja & Tabel Value24 akan muncul di sini -->
   <div id="unitKerjaSection"></div>
 </div>
 
 <script>
 let rawData = [], radarChart, barChart, lineChartIndeks, lineChartFaktor;
+let dataInternal = [], dataEksternal = [], dataEksper = [];
+let dataUnitKerjaInternal = [], dataUnitKerjaEksternal = [], dataUnitKerjaEksper = [];
+let kelompokAktif = "Internal";
+let radarKomponenChart = null;
 
 function getColor(value) {
   if (value >= 78) return 'hijau';
@@ -254,9 +256,7 @@ fetch("https://raw.githubusercontent.com/timotiushps/hasilspi24/main/agregat_tra
 
 document.getElementById("instansiInput").addEventListener("change", updateDashboard);
 document.getElementById("yearSelect").addEventListener("change", updateDashboard);
-</script>
 
-<script>
 function renderFaktorKoreksiLineChart(filtered) {
   const found1 = filtered.find(d => d["Index_name"] === "Prevalensi Korupsi");
   const found2 = filtered.find(d => d["Index_name"] === "Integritas Pelaksanaan SPI");
@@ -302,25 +302,6 @@ function renderFaktorKoreksiLineChart(filtered) {
     plugins: [ChartDataLabels]
   });
 }
-</script>
-
-<script>
-let dataInternal = [], dataEksternal = [], dataEksper = [];
-let dataUnitKerjaInternal = [], dataUnitKerjaEksternal = [], dataUnitKerjaEksper = [];
-let kelompokAktif = "Internal";
-let radarKomponenChart = null;
-
-const urutanInternal = [
-  "Internal", "Integritas Dalam Pelaksanaan Tugas", "Pengelolaan Anggaran", 
-  "Pengelolaan PBJ", "Pengelolaan SDM", "Perdagangan Pengaruh (Trading in Influence)", 
-  "Sosialisasi Antikorupsi", "Transparansi"
-];
-const urutanEksternal = [
-  "Eksternal", "Integritas Pegawai", "Transparansi dan Keadilan Layanan", "Upaya Pencegahan Korupsi"
-];
-const urutanEksper = [
-  "Eksper", "Integritas Instansi"
-];
 
 async function loadAllKomponenData() {
   const urls = {
@@ -332,8 +313,6 @@ async function loadAllKomponenData() {
   [dataInternal, dataEksternal, dataEksper] = await Promise.all([
     load(urls.internal), load(urls.eksternal), load(urls.eksper)
   ]);
-
-  // Load unit kerja cleaned dataset
   [dataUnitKerjaInternal, dataUnitKerjaEksternal, dataUnitKerjaEksper] = await Promise.all([
     fetch('https://raw.githubusercontent.com/timotiushps/hasilspi24/main/internal_cleaned.csv').then(r=>r.text()).then(txt => Papa.parse(txt, {header:true, skipEmptyLines:true}).data),
     fetch('https://raw.githubusercontent.com/timotiushps/hasilspi24/main/eksternal_cleaned.csv').then(r=>r.text()).then(txt => Papa.parse(txt, {header:true, skipEmptyLines:true}).data),
@@ -436,62 +415,66 @@ function tampilkanTabelRadarKomponen() {
   tampilkanUnitKerjaSection();
 }
 
+// --- BAGIAN BARU: Pilihan Unit Kerja dan Tabel Value24 ---
 function tampilkanUnitKerjaSection() {
   const instansi = document.getElementById("instansiInput").value;
-  const tahun = document.getElementById("yearSelect").value;
-  let kode_jaga = "0000";
   let dataset = [];
-  let unitList = [];
+  let urutan = [];
 
-  // Pilih dataset unit kerja sesuai kelompok aktif
-  if (kelompokAktif === "Internal") dataset = dataUnitKerjaInternal;
-  else if (kelompokAktif === "Eksternal") dataset = dataUnitKerjaEksternal;
-  else if (kelompokAktif === "Eksper") dataset = dataUnitKerjaEksper;
+  if (kelompokAktif === "Internal") {
+    dataset = dataUnitKerjaInternal;
+    urutan = [
+      "Internal", "Integritas Dalam Pelaksanaan Tugas", "Pengelolaan Anggaran",
+      "Pengelolaan PBJ", "Pengelolaan SDM", "Perdagangan Pengaruh (Trading in Influence)",
+      "Sosialisasi Antikorupsi", "Transparansi"
+    ];
+  }
+  else if (kelompokAktif === "Eksternal") {
+    dataset = dataUnitKerjaEksternal;
+    urutan = [
+      "Eksternal", "Integritas Pegawai", "Transparansi dan Keadilan Layanan", "Upaya Pencegahan Korupsi"
+    ];
+  }
+  else if (kelompokAktif === "Eksper") {
+    dataset = dataUnitKerjaEksper;
+    urutan = ["Eksper", "Integritas Instansi"];
+  }
 
-  // Cari kode_jaga_org dari salah satu row (harus 2024)
-  const filteredInstansi = dataset.filter(d => d["data.instansi"] === instansi && d["tahun"] === "2024");
-  if (filteredInstansi.length > 0) kode_jaga = filteredInstansi[0]["KODE_JAGA_ORG"];
-
-  // Jika "Seluruh K/L/PD Peserta SPI 2024" atau kode_jaga = "0000", tidak tampil
-  if (
-    instansi === "Seluruh K/L/PD Peserta SPI 2024" ||
-    kode_jaga === "0000" ||
-    filteredInstansi.length === 0
-  ) {
+  if (instansi === "Seluruh K/L/PD Peserta SPI 2024") {
     document.getElementById("unitKerjaSection").innerHTML = "";
     return;
   }
 
-  // Ambil semua unit kerja (tahun 2024 saja)
-  unitList = dataset.filter(d => d["data.instansi"] === instansi && d["tahun"] === "2024");
+  const units = dataset.filter(
+    d => d["data.instansi"] === instansi
+  );
 
-  // Buat pilihan unit kerja
+  if (units.length === 0) {
+    document.getElementById("unitKerjaSection").innerHTML = "";
+    return;
+  }
+
+  const uniqueUnitNames = [...new Set(units.map(u => u["name"]))].filter(Boolean);
+
   let selectHtml = `
     <div class="mt-4">
       <label for="unitKerjaSelect" class="form-label">Pilih Unit Kerja:</label>
       <select id="unitKerjaSelect" class="form-select mb-2">
         <option value="">-- Pilih Unit Kerja --</option>
-        ${unitList.map(u => `<option value="${u["name"]}">${u["name"]}</option>`).join("")}
+        ${uniqueUnitNames.map(u => `<option value="${u}">${u}</option>`).join("")}
       </select>
       <div id="tabelUnitKerja"></div>
     </div>
   `;
   document.getElementById("unitKerjaSection").innerHTML = selectHtml;
 
-  // Event ketika unit kerja dipilih
   document.getElementById("unitKerjaSelect").onchange = function() {
     const selectedName = this.value;
     if (!selectedName) {
       document.getElementById("tabelUnitKerja").innerHTML = "";
       return;
     }
-    // Tampilkan tabel Value24 sesuai urutan index_name
-    let urutan = [];
-    if (kelompokAktif === "Internal") urutan = urutanInternal;
-    else if (kelompokAktif === "Eksternal") urutan = urutanEksternal;
-    else if (kelompokAktif === "Eksper") urutan = urutanEksper;
-
-    const dataPerUnit = unitList.filter(u => u["name"] === selectedName);
+    const dataPerUnit = units.filter(u => u["name"] === selectedName);
     let html = `
       <table class="table table-sm table-bordered mt-2">
         <thead class="table-light">
@@ -539,6 +522,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 </script>
 
-<footer class="text-center small text-muted mt-5 mb-3">v1.0206252215<br>© Tim SPI 2025 KPK RI</footer>
+<footer class="text-center small text-muted mt-5 mb-3">v1.0206252230<br>© Tim SPI 2025 KPK RI</footer>
 </body>
 </html>
