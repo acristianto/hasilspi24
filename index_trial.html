@@ -11,8 +11,9 @@
   <style>
     .angka-indeks { font-size: 1.5rem; font-weight: bold; }
     .angka-agregat { font-size: 2rem; font-weight: bold; }
-    .hijau { color: green; } .kuning { color: orange; } .merah { color: red; }
-
+    .hijau { color: green !important; }
+    .kuning { color: orange !important; }
+    .merah { color: red !important; }
     .top-buttons {
       display: flex;
       justify-content: center;
@@ -114,6 +115,14 @@ let dataInternal = [], dataEksternal = [], dataEksper = [];
 let dataUnitKerjaInternal = [], dataUnitKerjaEksternal = [], dataUnitKerjaEksper = [];
 let kelompokAktif = "Internal";
 let radarKomponenChart = null;
+
+function getColorClass(value) {
+  if (value === undefined || value === null || value === "" || isNaN(value)) return "";
+  value = parseFloat(value);
+  if (value < 73) return 'merah';
+  if (value < 78) return 'kuning';
+  return 'hijau';
+}
 
 function getColor(value) {
   if (value >= 78) return 'hijau';
@@ -334,20 +343,26 @@ function tampilkanTabelRadarKomponen() {
   const tahun = document.getElementById("yearSelect").value;
   const komponen = getKomponenData(kelompokAktif, instansi);
 
-  // Tabel
+  // Tabel dengan judul kolom baru dan value berwarna
   const html = `
     <table class="table table-sm table-bordered">
       <thead class="table-light">
-        <tr><th>Index Name</th><th>2021</th><th>2022</th><th>2023</th><th>2024</th></tr>
+        <tr>
+          <th>Dimensi</th>
+          <th>2021</th>
+          <th>2022</th>
+          <th>2023</th>
+          <th>2024</th>
+        </tr>
       </thead>
       <tbody>
         ${komponen.map(r => `
           <tr>
             <td>${r["Index_name"]}</td>
-            <td>${r["Value21"] ?? "-"}</td>
-            <td>${r["Value22"] ?? "-"}</td>
-            <td>${r["Value23"] ?? "-"}</td>
-            <td>${r["Value24"] ?? "-"}</td>
+            <td class="${getColorClass(r["Value21"])}">${r["Value21"] ?? "-"}</td>
+            <td class="${getColorClass(r["Value22"])}">${r["Value22"] ?? "-"}</td>
+            <td class="${getColorClass(r["Value23"])}">${r["Value23"] ?? "-"}</td>
+            <td class="${getColorClass(r["Value24"])}">${r["Value24"] ?? "-"}</td>
           </tr>
         `).join("")}
       </tbody>
@@ -415,7 +430,7 @@ function tampilkanTabelRadarKomponen() {
   tampilkanUnitKerjaSection();
 }
 
-// --- BAGIAN BARU: Pilihan Unit Kerja dan Tabel Value24 ---
+// Pilihan Unit Kerja dan Tabel Value24
 function tampilkanUnitKerjaSection() {
   const instansi = document.getElementById("instansiInput").value;
   let dataset = [];
@@ -478,12 +493,14 @@ function tampilkanUnitKerjaSection() {
     let html = `
       <table class="table table-sm table-bordered mt-2">
         <thead class="table-light">
-          <tr><th>Index Name</th><th>Value24</th></tr>
+          <tr><th>Dimensi</th><th>2024</th></tr>
         </thead>
         <tbody>
           ${urutan.map(idx => {
             const row = dataPerUnit.find(d => d["Index_name"] === idx);
-            return `<tr><td>${idx}</td><td>${row && row["Value24"] ? row["Value24"] : "-"}</td></tr>`;
+            const val = row && row["Value24"] ? row["Value24"] : "-";
+            const colorClass = getColorClass(val);
+            return `<tr><td>${idx}</td><td class="${colorClass}">${val}</td></tr>`;
           }).join("")}
         </tbody>
       </table>
@@ -522,6 +539,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 </script>
 
-<footer class="text-center small text-muted mt-5 mb-3">v1.0206252230<br>© Tim SPI 2025 KPK RI</footer>
+<footer class="text-center small text-muted mt-5 mb-3">v1.0206251421<br>© Tim SPI 2025 KPK RI</footer>
 </body>
 </html>
