@@ -103,34 +103,38 @@ const kelompokRisiko = [
   { title: "EKSPER", groups: mappingEksper }
 ];
 
-// Dimensi yang butuh aturan warna khusus
 const SPECIAL_DIMENSI = [
   "Sosialisasi Antikorupsi",
   "Transparansi",
   "Upaya Pencegahan Korupsi"
 ];
 
+// Fungsi cek cell class berdasarkan value & dimensi
 function riskCellClass(val, dimensi) {
-  // Aturan khusus
+  // Jika NA, return "" (tidak pewarnaan)
+  if (!val || val.trim().toUpperCase() === "NA") return "";
+  const v = val.trim().toLowerCase();
+
   if (SPECIAL_DIMENSI.includes(dimensi)) {
-    if (!val || typeof val !== "string") return "";
-    const v = val.trim().toLowerCase();
     if (v === "rendah" || v === "di bawah rata-rata") return "risk-custom-merah";
     if (v === "kurang") return "risk-custom-merah-muda";
     if (v === "sedang") return "risk-custom-kuning";
-    // jika "di bawah rata-rata" ingin hijau (override?), bisa tambah else if:
-    if (v === "di bawah rata-rata") return "risk-custom-hijau";
+    if (v === "tinggi" || v === "di atas rata-rata") return "risk-custom-hijau";
     return "";
   } else {
-    // Aturan default
-    if (!val || typeof val !== "string") return "";
-    const v = val.trim().toLowerCase();
     if (v === "rendah") return "risk-low";
     if (v === "sedang") return "risk-medium";
     if (v === "tinggi") return "risk-high";
     if (v === "sangat tinggi") return "risk-very-high";
+    // Aturan default, NA dan lainnya = ""
     return "";
   }
+}
+
+// Fungsi untuk menampilkan nilai (jika NA tampil blank)
+function renderValue(val) {
+  if (!val || val.trim().toUpperCase() === "NA") return "";
+  return val;
 }
 
 const RISIKO_CSV_URL = "https://raw.githubusercontent.com/timotiushps/hasilspi24/main/risiko.csv";
@@ -172,10 +176,10 @@ function renderRisikoCards(instansi) {
                   <tr>
                     <td>${r["Index_name"] ?? "-"}</td>
                     <td>${r["ket_report"] ?? "-"}</td>
-                    <td class="${riskCellClass(r["Level_Risiko21"], g.label)}">${r["Level_Risiko21"] ?? "-"}</td>
-                    <td class="${riskCellClass(r["Level_Risiko22"], g.label)}">${r["Level_Risiko22"] ?? "-"}</td>
-                    <td class="${riskCellClass(r["Level_Risiko23"], g.label)}">${r["Level_Risiko23"] ?? "-"}</td>
-                    <td class="${riskCellClass(r["Level_Risiko24"], g.label)}">${r["Level_Risiko24"] ?? "-"}</td>
+                    <td class="${riskCellClass(r["Level_Risiko21"], g.label)}">${renderValue(r["Level_Risiko21"])}</td>
+                    <td class="${riskCellClass(r["Level_Risiko22"], g.label)}">${renderValue(r["Level_Risiko22"])}</td>
+                    <td class="${riskCellClass(r["Level_Risiko23"], g.label)}">${renderValue(r["Level_Risiko23"])}</td>
+                    <td class="${riskCellClass(r["Level_Risiko24"], g.label)}">${renderValue(r["Level_Risiko24"])}</td>
                   </tr>
                 `).join("")}
               </tbody>
@@ -225,6 +229,6 @@ document.getElementById("instansiInput").addEventListener("input", function() {
 });
 </script>
 
-<footer class="text-center small text-muted mt-5 mb-3">v1.05 Risiko SPI 2024<br>© Tim SPI 2025 KPK RI</footer>
+<footer class="text-center small text-muted mt-5 mb-3">v1.06 Risiko SPI 2024<br>© Tim SPI 2025 KPK RI</footer>
 </body>
 </html>
