@@ -50,6 +50,11 @@
       font-size: 1rem;
       color: #333;
     }
+    .checklist-tahun label {
+      margin-right: 16px;
+      margin-bottom: 2px;
+      font-weight: 500;
+    }
     @media (max-width: 900px) {
       .custom-card { padding: 0.8rem; }
       .table th, .table td { font-size: 0.92rem; }
@@ -73,6 +78,14 @@
     <label for="instansiInput" class="form-label">Nama Instansi:</label>
     <input class="form-control" list="instansiList" id="instansiInput" placeholder="Ketik nama instansi...">
     <datalist id="instansiList"></datalist>
+  </div>
+
+  <div class="mb-3 checklist-tahun">
+    <div class="fw-bold mb-1">Pilih Tahun Risiko yang ingin ditampilkan:</div>
+    <label><input type="checkbox" class="tahun-checkbox" value="2021" checked> 2021</label>
+    <label><input type="checkbox" class="tahun-checkbox" value="2022" checked> 2022</label>
+    <label><input type="checkbox" class="tahun-checkbox" value="2023" checked> 2023</label>
+    <label><input type="checkbox" class="tahun-checkbox" value="2024" checked> 2024</label>
   </div>
 
   <div id="risikoCards"></div>
@@ -137,10 +150,28 @@ function renderValue(val) {
   return val;
 }
 
+// Untuk checklist tahun
+function getCheckedTahun() {
+  const checkboxes = document.querySelectorAll('.tahun-checkbox');
+  let tahun = [];
+  checkboxes.forEach(cb => { if (cb.checked) tahun.push(cb.value); });
+  return tahun;
+}
+
+const tahunColumns = [
+  { tahun: "2021", col: "Level_Risiko21" },
+  { tahun: "2022", col: "Level_Risiko22" },
+  { tahun: "2023", col: "Level_Risiko23" },
+  { tahun: "2024", col: "Level_Risiko24" }
+];
+
 const RISIKO_CSV_URL = "https://raw.githubusercontent.com/timotiushps/hasilspi24/main/risiko.csv";
 let risikoData = [];
 
 function renderRisikoCards(instansi) {
+  const tahunSelected = getCheckedTahun();
+  const tahunCols = tahunColumns.filter(t => tahunSelected.includes(t.tahun));
+
   const filtered = risikoData.filter(r => r["data.instansi"] === instansi);
 
   if (filtered.length === 0) {
@@ -165,10 +196,7 @@ function renderRisikoCards(instansi) {
                 <tr>
                   <th>Index Name</th>
                   <th>Keterangan</th>
-                  <th>Level Risiko 2021</th>
-                  <th>Level Risiko 2022</th>
-                  <th>Level Risiko 2023</th>
-                  <th>Level Risiko 2024</th>
+                  ${tahunCols.map(t => `<th>Level Risiko ${t.tahun}</th>`).join("")}
                 </tr>
               </thead>
               <tbody>
@@ -176,10 +204,9 @@ function renderRisikoCards(instansi) {
                   <tr>
                     <td>${r["Index_name"] ?? "-"}</td>
                     <td>${r["ket_report"] ?? "-"}</td>
-                    <td class="${riskCellClass(r["Level_Risiko21"], g.label)}">${renderValue(r["Level_Risiko21"])}</td>
-                    <td class="${riskCellClass(r["Level_Risiko22"], g.label)}">${renderValue(r["Level_Risiko22"])}</td>
-                    <td class="${riskCellClass(r["Level_Risiko23"], g.label)}">${renderValue(r["Level_Risiko23"])}</td>
-                    <td class="${riskCellClass(r["Level_Risiko24"], g.label)}">${renderValue(r["Level_Risiko24"])}</td>
+                    ${tahunCols.map(t =>
+                      `<td class="${riskCellClass(r[t.col], g.label)}">${renderValue(r[t.col])}</td>`
+                    ).join("")}
                   </tr>
                 `).join("")}
               </tbody>
@@ -224,11 +251,15 @@ fetch(RISIKO_CSV_URL)
   });
 
 document.getElementById("instansiInput").addEventListener("input", function() {
-  const instansi = this.value;
-  renderRisikoCards(instansi);
+  renderRisikoCards(this.value);
+});
+document.querySelectorAll('.tahun-checkbox').forEach(cb => {
+  cb.addEventListener('change', function() {
+    renderRisikoCards(document.getElementById("instansiInput").value);
+  });
 });
 </script>
 
-<footer class="text-center small text-muted mt-5 mb-3">v1.06 Risiko SPI 2024<br>© Tim SPI 2025 KPK RI</footer>
+<footer class="text-center small text-muted mt-5 mb-3">v1.07 Risiko SPI 2024<br>© Tim SPI 2025 KPK RI</footer>
 </body>
 </html>
