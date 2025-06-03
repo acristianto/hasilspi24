@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard Risiko SPI 2024</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+    .level-merah { color: red; font-weight: bold; }
+    .level-kuning { color: orange; font-weight: bold; }
+    .level-hijau { color: green; font-weight: bold; }
+    .top-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 15px 0;
+    }
+    .top-buttons a {
+      padding: 10px 25px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-decoration: none;
+      color: white;
+      border-radius: 30px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+    .top-buttons a.risiko-btn {
+      background: linear-gradient(45deg, #b06ab3, #4568dc);
+    }
+    .top-buttons a:hover {
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+      transform: translateY(-3px);
+    }
+    .top-buttons a:active {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body style="background-color:white">
+
+<div class="container">
+  <div class="top-buttons">
+    <a href="index.html" class="risiko-btn">Indeks SPI</a>
+    <a href="#" class="risiko-btn" style="opacity:0.7;pointer-events:none;">Risiko</a>
+  </div>
+</div>
+
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <img src="https://elhkpn.kpk.go.id/portal-assets/img/image2.jpeg" style="height:50px;">
+    <h3 class="text-center flex-grow-1">Dashboard Risiko SPI 2024</h3>
+    <img src="https://spi.kpk.go.id/img/logo-spi.d5368d4c.png" style="height:50px;">
+  </div>
+
+  <div class="mb-3">
+    <label for="instansiInput" class="form-label">Nama Instansi:</label>
+    <input class="form-control" list="instansiList" id="instansiInput" placeholder="Ketik nama instansi...">
+    <datalist id="instansiList"></datalist>
+  </div>
+
+  <div id="risikoTables"></div>
+</div>
+
+<script>
+// --- Konfigurasi Data CSV ---
+const RISIKO_CSV_URL = "https://raw.githubusercontent.com/timotiushps/hasilspi24/main/risiko.csv";
+
+let risikoData = [];
+
+function getColorLevel(val) {
+  if (!val || typeof val !== "string") return "";
+  const value = val.trim().toLowerCase();
+  if (value.includes("tinggi") || value === "merah") return "level-merah";
+  if (value.includes("sedang") || value === "kuning") return "level-kuning";
+  if (value.includes("rendah") || value === "hijau") return "level-hijau";
+  return "";
+}
+
+function renderTables(instansi) {
+  const filtered = risikoData.filter(r => r["data.instansi"] === instansi);
+  if (filtered.length === 0) {
+    document.getElementById("risikoTables").innerHTML = "<div class='text-center text-muted my-5'>Silakan pilih instansi untuk menampilkan data risiko.</div>";
+    return;
+  }
+
+  // Ambil semua nilai unik dimensi_report
+  const dimensi = [...new Set(filtered.map(r => r["dimensi_report"]))];
+
+  // Untuk setiap dimensi_report, buat tabel
+  let html = "";
+  dimensi.forEach(dim => {
+    const rows = filtered.filter(r => r["dimensi_report"] === dim);
+    html += `
+      <div class="mb-4">
+        <h5 class="mt-4 mb-2">${dim}</h5>
+        <div class="table-responsive">
+        <table class="table table-bordered table-sm">
+          <thead class="table-light">
+            <tr>
+              <th>Index Name</th>
+              <th>Keterangan</th>
+              <th>Level Risiko 2021</th>
+              <th>Level Risiko 2022</th>
+              <th>Level Risiko 2023</th>
+              <th>Level Risiko 2024</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r => `
+              <tr>
+                <td>${r["Index_name"] ?? "-"}</td>
+                <td>${r["ket_report"] ?? "-"}</td>
+                <td class="${getColorLevel(r["Level_Risiko21"])}">${r["Level_Risiko21"] ?? "-"}</td>
+                <td class="${getColorLevel(r["Level_Risiko22"])}">${r["Level_Risiko22"] ?? "-"}</td>
+                <td class="${getColorLevel(r["Level_Risiko23"])}">${r["Level_Risiko23"] ?? "-"}</td>
+                <td class="${getColorLevel(r["Level_Risiko24"])}">${r["Level_Risiko24"] ?? "-"}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+        </div>
+      </div>
+    `;
+  });
+  document.getElementById("risikoTables").innerHTML = html;
+}
+
+fetch(RISIKO_CSV_URL)
+  .then(res => res.text())
+  .then(csv => {
+    Papa.parse(csv, {
+      header: true,
+      skipEmptyLines: true,
+      complete: function(results) {
+        risikoData = results.data;
+        // Autocomplete dari kolom "data.instansi"
+        const instansis = [...new Set(risikoData.map(r => r["data.instansi"]))].filter(Boolean);
+        const list = document.getElementById("instansiList");
+        list.innerHTML = "";
+        instansis.forEach(i => {
+          const opt = document.createElement("option");
+          opt.value = i;
+          list.appendChild(opt);
+        });
+      }
+    });
+  });
+
+document.getElementById("instansiInput").addEventListener("input", function() {
+  const instansi = this.value;
+  renderTables(instansi);
+});
+</script>
+
+<footer class="text-center small text-muted mt-5 mb-3">v1.03 Risiko SPI 2024<br>© Tim SPI 2025 KPK RI</footer>
+</body>
+</html>
