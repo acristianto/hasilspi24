@@ -188,6 +188,7 @@ function renderKeberadaanCards(instansi) {
             <table class="table table-bordered table-sm shadow-sm">
               <thead class="table-light">
                 <tr>
+                  <th>Q</th>
                   <th>Permasalahan</th>
                   <th>Keberadaan (%)</th>
                   <th>Tingkat Keberadaan</th>
@@ -196,7 +197,8 @@ function renderKeberadaanCards(instansi) {
               <tbody>
                 ${rows.map(r => `
                   <tr>
-                    <td>${r["Index_name"] ?? "-"}</td>
+                    <td>${r["Index_name"] ?? ""}</td>
+                    <td>${r["ket_report"] ?? ""}</td>
                     <td>${r["Keberadaan24"] ?? ""}</td>
                     <td class="${shadingClass(r["level_keberadaan24"])}">${r["level_keberadaan24"] ?? ""}</td>
                   </tr>
@@ -247,6 +249,6 @@ document.getElementById("instansiInput").addEventListener("input", function() {
 });
 </script>
 
-<footer class="text-center small text-muted mt-5 mb-3">v1.1 Keberadaan SPI 2024<br>© Tim SPI 2025 KPK RI</footer>
+<footer class="text-center small text-muted mt-5 mb-3">v1.0406251500<br>© Hak Cipta Milik Tim SPI 2025 KPK RI<br>Segala Penggunaan Data dari dashboard ini harus seizin KPK RI.</footer>
 </body>
 </html>
