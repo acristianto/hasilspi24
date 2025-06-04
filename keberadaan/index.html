@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard Keberadaan Masalah Hasil SPI 2024</title>
+  <title>Dashboard Keberadaan Permasalahan SPI 2024</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
@@ -47,88 +47,195 @@
       font-size: 1rem;
       color: #333;
     }
-    .top-buttons {
+    /* --- Desktop Navbar --- */
+    .header-nav {
       display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin: 18px 0 28px 0;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      border-bottom: 1.5px solid #e5e7eb;
+      margin-bottom: 14px;
+      padding: 9px 0 2px 0;
     }
-    .top-buttons a {
-      padding: 10px 25px;
-      font-weight: 700;
-      font-size: 1.1rem;
+    .header-nav .logo-kpk { height: 40px; margin-left: 18px;}
+    .header-nav .logo-spi { height: 40px; margin-right: 18px;}
+    .tab-menu {
+      display: flex;
+      gap: 48px;
+    }
+    .tab-menu a {
+      display: inline-block;
+      font-size: 1.12rem;
+      font-weight: 600;
+      color: #425466;
       text-decoration: none;
-      color: white;
-      border-radius: 30px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.13);
-      transition: all 0.3s ease;
-      user-select: none;
-      outline: none;
+      padding: 11px 0 8px 0;
+      border-bottom: 2.5px solid transparent;
+      transition: color 0.18s, border-bottom 0.18s;
+      background: none;
+    }
+    .tab-menu a.active,
+    .tab-menu a:hover {
+      color: #206bc4;
+    }
+    .tab-menu a.active {
+      border-bottom: 2.5px solid #206bc4;
+      color: #206bc4;
+      cursor: default;
+    }
+    /* --- Mobile Sidebar --- */
+    .mobile-nav {
+      display: none;
+    }
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      z-index: 1010;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(50,70,90,0.25);
+      transition: 0.25s;
+    }
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: -270px;
+      width: 230px;
+      height: 100vh;
+      z-index: 1020;
+      background: #fff;
+      border-right: 1.5px solid #e5e7eb;
+      box-shadow: 2px 0 16px rgba(44,62,80,0.08);
+      padding: 24px 12px 12px 12px;
+      transition: left 0.23s;
+    }
+    .sidebar.open { left: 0; }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    .sidebar-header img { height: 35px; }
+    .sidebar-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .sidebar-menu a {
+      display: block;
+      padding: 11px 12px 9px 12px;
+      font-size: 1.07rem;
+      font-weight: 600;
+      color: #425466;
+      text-decoration: none;
+      border-radius: 6px;
+      margin-bottom: 2px;
+      border-left: 3px solid transparent;
+      transition: color 0.16s, border-left 0.16s, background 0.17s;
+    }
+    .sidebar-menu a.active,
+    .sidebar-menu a:hover {
+      color: #206bc4;
+      background: #f5faff;
+      border-left: 3px solid #206bc4;
+    }
+    .burger {
+      display: none;
+      background: none;
       border: none;
-      background: #aaa;
+      font-size: 2.1rem;
+      color: #37517e;
+      margin-left: 12px;
+      margin-right: 10px;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.14s;
     }
-    .top-buttons a.response-rate-btn {
-      background: linear-gradient(45deg, #ff6a00, #ee0979);
-    }
-    .top-buttons a.indeks-btn {
-      background: linear-gradient(45deg, #2193b0, #6dd5ed);
-    }
-    .top-buttons a.risiko-btn {
-      background: linear-gradient(45deg, #b06ab3, #4568dc);
-    }
-    .top-buttons a.keberadaan-btn {
-      background: linear-gradient(45deg, #0ba360, #3cba92);
-    }
-    .top-buttons a:hover, .top-buttons a:focus {
-      box-shadow: 0 6px 20px rgba(0,0,0,0.22);
-      transform: translateY(-3px);
-    }
-    .top-buttons a:active {
-      transform: translateY(-1px);
-      box-shadow: 0 3px 10px rgba(0,0,0,0.16);
+    @media (max-width: 991.98px) {
+      .header-nav { display: none; }
+      .mobile-nav {
+        display: flex;
+        align-items: center;
+        height: 56px;
+        background: #fff;
+        border-bottom: 1.5px solid #e5e7eb;
+        margin-bottom: 10px;
+      }
+      .burger { display: block; }
+      .sidebar-overlay.open { display: block; }
     }
     @media (max-width: 900px) {
       .custom-card { padding: 0.8rem; }
       .table th, .table td { font-size: 0.92rem; }
-      .top-buttons { gap: 10px; }
-      .top-buttons a { padding: 7px 14px; font-size: 0.96rem; }
+      .tab-menu { gap: 18px; }
+      .tab-menu a { font-size: 1rem; padding: 8px 0 5px 0; }
+      .header-nav .logo-kpk, .header-nav .logo-spi { height: 32px; }
     }
   </style>
 </head>
 <body>
-  <!-- Tombol Navigasi Modern -->
-  <div class="container">
-    <div class="top-buttons">
-      <a href="https://timotiushps.github.io/dashboardresponratespi24/" class="response-rate-btn">Response Rate</a>
-      <a href="https://timotiushps.github.io/hasilspi24/" class="indeks-btn">Indeks</a>
-      <a href="https://timotiushps.github.io/hasilspi24/risiko" class="risiko-btn">Tabel Risiko</a>
-      <a href="https://timotiushps.github.io/hasilspi24/keberadaan" class="keberadaan-btn">Keberadaan</a>
-    </div>
+  <!-- Desktop Navbar -->
+  <div class="header-nav">
+    <img src="https://elhkpn.kpk.go.id/portal-assets/img/image2.jpeg" alt="Logo KPK" class="logo-kpk">
+    <nav class="tab-menu">
+      <a href="https://timotiushps.github.io/hasilspi24/responrate" class="">Response Rate</a>
+      <a href="https://timotiushps.github.io/hasilspi24/" class="">Indeks</a>
+      <a href="https://timotiushps.github.io/hasilspi24/risiko" class="">Tabel Risiko</a>
+      <a href="https://timotiushps.github.io/hasilspi24/keberadaan" class="active">Keberadaan</a>
+    </nav>
+    <img src="https://spi.kpk.go.id/img/logo-spi.d5368d4c.png" alt="Logo SPI" class="logo-spi">
   </div>
-
-  <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <img src="https://elhkpn.kpk.go.id/portal-assets/img/image2.jpeg" style="height:42px;">
-      <h3 class="text-center flex-grow-1 mb-0" style="font-size:1.3rem"><i>Dashboard</i> Keberadaan Permasalahan SPI 2024</h3>
-      <img src="https://spi.kpk.go.id/img/logo-spi.d5368d4c.png" style="height:42px;">
+  <!-- Mobile Navbar with burger -->
+  <div class="mobile-nav">
+    <button class="burger" aria-label="Menu" onclick="openSidebar()">&#9776;</button>
+    <div style="flex:1"></div>
+    <span style="font-size:1.05rem;font-weight:700;color:#425466;letter-spacing:1px;">Hasil SPI 2024</span>
+    <div style="flex:1"></div>
+  </div>
+  <!-- Sidebar Mobile -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="https://elhkpn.kpk.go.id/portal-assets/img/image2.jpeg" alt="Logo KPK">
+      <img src="https://spi.kpk.go.id/img/logo-spi.d5368d4c.png" alt="Logo SPI">
     </div>
-
+    <nav class="sidebar-menu">
+      <a href="https://timotiushps.github.io/hasilspi24/responrate" class="">Response Rate</a>
+      <a href="https://timotiushps.github.io/hasilspi24/" class="">Indeks</a>
+      <a href="https://timotiushps.github.io/hasilspi24/risiko" class="">Tabel Risiko</a>
+      <a href="https://timotiushps.github.io/hasilspi24/keberadaan" class="active">Keberadaan</a>
+    </nav>
+  </aside>
+  <div class="container py-4">
+    <h3 class="text-center flex-grow-1 mb-4" style="font-size:1.3rem"><i>Dashboard</i> Keberadaan Permasalahan SPI 2024</h3>
     <div class="instansi-note">
-      <strong>Angka keberadaan menunjukkan berapa persen responden yang menjawab bahwa permasalahan tersebut memang ada. 
+      <strong>Angka keberadaan menunjukkan berapa persen responden yang menjawab bahwa permasalahan tersebut memang ada.
         <br>Angka dan tingkat keberadaan digunakan untuk kepentingan materi sosialisasi dan kampanye terkait hasil SPI 2024.</strong>
     </div>
-
     <div class="mb-3">
       <label for="instansiInput" class="form-label">Nama Instansi:</label>
       <input class="form-control" list="instansiList" id="instansiInput" placeholder="Ketik nama instansi...">
       <datalist id="instansiList"></datalist>
     </div>
-
     <div id="keberadaanCards"></div>
   </div>
-
 <script>
-// Mapping kelompok & label persis seperti dashboard risiko
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+// Tutup sidebar jika resize ke desktop
+window.addEventListener('resize', function() {
+  if (window.innerWidth > 991) closeSidebar();
+});
+
+// --- DASHBOARD LOGIC ---
 const mappingInternal = [
   { key: "Integritas Pelaksanaan Tugas", label: "Integritas Dalam Pelaksanaan Tugas" },
   { key: "Pengelolaan Anggaran", label: "Pengelolaan Anggaran" },
@@ -146,14 +253,11 @@ const mappingEksternal = [
 const mappingEksper = [
   { key: "Integritas Instansi", label: "Integritas Instansi" }
 ];
-
 const kelompokKeberadaan = [
   { title: "INTERNAL", groups: mappingInternal },
   { title: "EKSTERNAL", groups: mappingEksternal },
   { title: "EKSPER", groups: mappingEksper }
 ];
-
-// Pewarnaan sesuai instruksi
 function shadingClass(level) {
   if (!level || typeof level !== "string") return "";
   const v = level.trim().toLowerCase();
@@ -163,33 +267,24 @@ function shadingClass(level) {
   if (v === "sangat tinggi") return "shading-very-high";
   return "";
 }
-
-// Format value Keberadaan24 menjadi persentase (0 desimal)
 function formatKeberadaan(val) {
   const num = Number(val);
   if (isNaN(num)) return "";
   return Math.round(num * 100);
 }
-
 const KEBERADAAN_CSV_URL = "https://raw.githubusercontent.com/timotiushps/hasilspi24/main/keberadaan.csv";
 let keberadaanData = [];
-
 function renderKeberadaanCards(instansi) {
   const filtered = keberadaanData.filter(r => r["data.instansi"] === instansi);
-
   if (filtered.length === 0) {
     document.getElementById("keberadaanCards").innerHTML = "<div class='text-center text-muted my-5'>Silakan pilih instansi untuk menampilkan data keberadaan.</div>";
     return;
   }
-
   let html = "";
   kelompokKeberadaan.forEach(kel => {
     let cardContent = "";
-
     kel.groups.forEach(g => {
-      // Filter baris pada CSV dengan dimensi_report = g.key
       const rows = filtered.filter(r => (r["dimensi_report"] || "").trim() === g.key);
-
       if (rows.length > 0) {
         cardContent += `
           <div class="group-title">${g.label}</div>
@@ -218,7 +313,6 @@ function renderKeberadaanCards(instansi) {
         `;
       }
     });
-
     if (cardContent) {
       html += `
         <div class="custom-card mb-4">
@@ -228,10 +322,8 @@ function renderKeberadaanCards(instansi) {
       `;
     }
   });
-
   document.getElementById("keberadaanCards").innerHTML = html;
 }
-
 fetch(KEBERADAAN_CSV_URL)
   .then(res => res.text())
   .then(csv => {
@@ -240,7 +332,6 @@ fetch(KEBERADAAN_CSV_URL)
       skipEmptyLines: true,
       complete: function(results) {
         keberadaanData = results.data;
-        // Autocomplete dari kolom "data.instansi"
         const instansis = [...new Set(keberadaanData.map(r => r["data.instansi"]))].filter(Boolean);
         const list = document.getElementById("instansiList");
         list.innerHTML = "";
@@ -252,13 +343,14 @@ fetch(KEBERADAAN_CSV_URL)
       }
     });
   });
-
 document.getElementById("instansiInput").addEventListener("input", function() {
   renderKeberadaanCards(this.value);
 });
 </script>
-
-<footer class="text-center small text-muted mt-5 mb-3">v1.0406251545<br>© Hak Cipta Milik Tim SPI 2025 KPK RI<br>
-    Segala Penggunaan Data dari <i>dashboard</i> ini harus seizin KPK RI.</footer>
+<footer class="text-center small text-muted mt-5 mb-3">
+  v1.0406251630<br>
+  © Hak Cipta Milik Tim SPI 2025 KPK RI<br>
+  Segala Penggunaan Data dari <i>dashboard</i> ini harus seizin KPK RI.
+</footer>
 </body>
 </html>
