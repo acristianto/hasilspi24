@@ -3,17 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard Keberadaan Permasalahan SPI 2024</title>
+  <title>Dashboard Keberadaan Masalah Hasil SPI 2024</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
-    body { background: #f4f6f9; }
+    body { background: #fff; }
     .custom-card {
-      background: white;
+      background: linear-gradient(140deg, #f7fafc 60%, #e9f1fb 100%);
       border-radius: 18px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+      box-shadow: 0 4px 20px rgba(44, 62, 80, 0.09);
       padding: 1.5rem;
       margin-bottom: 2.5rem;
+      border: none;
     }
     .sub-title {
       letter-spacing: 2px;
@@ -108,12 +109,13 @@
   <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <img src="https://elhkpn.kpk.go.id/portal-assets/img/image2.jpeg" style="height:42px;">
-      <h3 class="text-center flex-grow-1 mb-0" style="font-size:1.3rem">Dashboard Keberadaan Permasalahan SPI 2024</h3>
+      <h3 class="text-center flex-grow-1 mb-0" style="font-size:1.3rem"><i>Dashboard</i> Keberadaan Permasalahan SPI 2024</h3>
       <img src="https://spi.kpk.go.id/img/logo-spi.d5368d4c.png" style="height:42px;">
     </div>
 
     <div class="instansi-note">
-      <strong>Angka keberadaan menunjukkan berapa persen responden yang menjawab bahwa permasalahan tersebut memang ada.<br>Angka dan tingkat keberadaan digunakan untuk kepentingan materi sosialisasi dan kampanye terkait hasil SPI 2024.</strong>
+      <strong>Angka keberadaan menunjukkan berapa persen responden yang menjawab bahwa permasalahan tersebut memang ada. 
+        <br>Angka dan tingkat keberadaan digunakan untuk kepentingan materi sosialisasi dan kampanye terkait hasil SPI 2024.</strong>
     </div>
 
     <div class="mb-3">
@@ -162,7 +164,7 @@ function shadingClass(level) {
   return "";
 }
 
-// Format value Keberadaan24 menjadi persentase
+// Format value Keberadaan24 menjadi persentase (0 desimal)
 function formatKeberadaan(val) {
   const num = Number(val);
   if (isNaN(num)) return "";
@@ -256,8 +258,7 @@ document.getElementById("instansiInput").addEventListener("input", function() {
 });
 </script>
 
-
-<footer class="text-center small text-muted mt-5 mb-3">v1.0406251500<br>© Hak Cipta Milik Tim SPI 2025 KPK RI<br>
-  Segala Penggunaan Data dari dashboard ini harus seizin KPK RI.</footer>
+<footer class="text-center small text-muted mt-5 mb-3">v1.0406251545<br>© Hak Cipta Milik Tim SPI 2025 KPK RI<br>
+    Segala Penggunaan Data dari <i>dashboard</i> ini harus seizin KPK RI.</footer>
 </body>
 </html>
