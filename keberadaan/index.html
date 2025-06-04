@@ -162,6 +162,13 @@ function shadingClass(level) {
   return "";
 }
 
+// Format value Keberadaan24 menjadi persentase
+function formatKeberadaan(val) {
+  const num = Number(val);
+  if (isNaN(num)) return "";
+  return (num * 100).toFixed(1);
+}
+
 const KEBERADAAN_CSV_URL = "https://raw.githubusercontent.com/timotiushps/hasilspi24/main/keberadaan.csv";
 let keberadaanData = [];
 
@@ -199,7 +206,7 @@ function renderKeberadaanCards(instansi) {
                   <tr>
                     <td>${r["Index_name"] ?? ""}</td>
                     <td>${r["ket_report"] ?? ""}</td>
-                    <td>${r["Keberadaan24"] ?? ""}</td>
+                    <td>${formatKeberadaan(r["Keberadaan24"])}</td>
                     <td class="${shadingClass(r["level_keberadaan24"])}">${r["level_keberadaan24"] ?? ""}</td>
                   </tr>
                 `).join("")}
@@ -249,6 +256,8 @@ document.getElementById("instansiInput").addEventListener("input", function() {
 });
 </script>
 
-<footer class="text-center small text-muted mt-5 mb-3">v1.0406251500<br>© Hak Cipta Milik Tim SPI 2025 KPK RI<br>Segala Penggunaan Data dari dashboard ini harus seizin KPK RI.</footer>
+
+<footer class="text-center small text-muted mt-5 mb-3">v1.0406251500<br>© Hak Cipta Milik Tim SPI 2025 KPK RI<br>
+  Segala Penggunaan Data dari dashboard ini harus seizin KPK RI.</footer>
 </body>
 </html>
