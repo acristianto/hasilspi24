@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <link rel="icon" href="https://spi.kpk.go.id/img/logo-spi.d5368d4c.png" type="image/png">
+  <meta charset="UTF-8">
+  <title>DASHBOARD RESPONSE RATE SPI 2024</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0/dist/chartjs-plugin-annotation.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; position: relative; }
+    button { margin: 10px; padding: 10px 20px; }
+    table, th, td { border: 1px solid #ccc; border-collapse: collapse; padding: 5px; }
+    table { margin-top: 20px; width: 100%; }
+    input, select { padding: 5px; width: 300px; margin-top: 10px; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    footer { text-align: center; margin-top: 40px; font-size: 0.9em; color: #555; }
+    .logo { height: 60px; }
+    .chart-container { margin-top: 30px; page-break-before: always; }
+    /* Tombol Modern */
+    .top-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0 24px 0;
+    }
+    .top-buttons a {
+      padding: 12px 28px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-decoration: none;
+      color: white;
+      border-radius: 30px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
+      user-select: none;
+      border: none;
+      outline: none;
+      display: inline-block;
+      background: #aaa;
+    }
+    .top-buttons a.response-rate-btn {
+      background: linear-gradient(45deg, #ff6a00, #ee0979);
+    }
+    .top-buttons a.indeks-btn {
+      background: linear-gradient(45deg, #2193b0, #6dd5ed);
+    }
+    .top-buttons a.risiko-btn {
+      background: linear-gradient(45deg, #b06ab3, #4568dc);
+    }
+    .top-buttons a:hover, .top-buttons a:focus {
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+      transform: translateY(-3px);
+    }
+    .top-buttons a:active {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+    @media (max-width: 600px) {
+      .top-buttons {
+        gap: 10px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .top-buttons a {
+        width: 100%;
+        font-size: 1rem;
+        padding: 12px 0;
+        margin: 0;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Tombol Modern (tidak membuka tab baru) -->
+<div class="top-buttons">
+  <a href="https://timotiushps.github.io/dashboardresponratespi24/" class="response-rate-btn">Response Rate</a>
+  <a href="https://timotiushps.github.io/hasilspi24/" class="indeks-btn">Indeks</a>
+  <a href="https://timotiushps.github.io/hasilspi24/risiko" class="risiko-btn">Tabel Risiko</a>
+</div>
+
+<div id="dashboard-content">
+  <header>
+    <img src="https://elhkpn.kpk.go.id/portal-assets/img/image2.jpeg" class="logo" alt="Logo KPK">
+    <h2>DASHBOARD RESPONSE RATE SPI 2024</h2>
+    <img src="https://spi.kpk.go.id/img/logo-spi.d5368d4c.png" class="logo" alt="Logo SPI">
+  </header>
+
+  <div>
+    <button onclick="loadDataset('eksternal')">Tampilkan Data Eksternal</button>
+    <button onclick="loadDataset('internal')">Tampilkan Data Internal</button>
+    <button onclick="downloadExcel()">SIMPAN KE EXCEL</button>
+    <button onclick="downloadPDF()">SIMPAN KE PDF</button>
+  </div>
+
+  <label for="instansiFilter">Filter Instansi:</label><br>
+  <input list="instansiList" id="instansiFilter" placeholder="Ketik nama instansi..." oninput="applyFilter()">
+  <datalist id="instansiList"></datalist><br>
+
+  <p id="status">Memuat data...</p>
+  <table id="data-table">
+    <thead id="table-head"></thead>
+    <tbody id="table-body"></tbody>
+  </table>
+
+  <div class="chart-container">
+    <canvas id="chartCapaian" width="900" height="400"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="chartResponse" width="900" height="400"></canvas>
+  </div>
+</div>
+
+<script>
+Chart.register(window['chartjs-plugin-annotation']);
+
+var urlMap = {
+  "eksternal": "https://raw.githubusercontent.com/timotiushps/tesdashboardspi24/main/rekap_response_rate_eksternal.csv",
+  "internal": "https://raw.githubusercontent.com/timotiushps/tesdashboardspi24/main/rekap_response_rate_internal.csv"
+};
+
+var chartCapaian = null;
+var chartResponse = null;
+var allData = [];
+var filteredData = [];
+var currentType = 'eksternal';
+
+const columnMap = {
+  instansi: "Instansi",
+  unitkerja: "Unit Kerja",
+  target: "Target Responden",
+  data_blast: "Jumlah Penerima Kuesioner",
+  persentase_capaian_target: "% Capaian Responden",
+  persentase_response_rate_online: "% Response Rate",
+  jumlah_capi: "Jumlah Responden CAPI"
+};
+
+const exportColumns = Object.keys(columnMap);
+
+function formatNumber(n) {
+  if (!n && n !== 0) return "";
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+function loadDataset(type) {
+  currentType = type;
+  document.getElementById('status').innerText = 'Memuat data ' + type + '...';
+  Papa.parse(urlMap[type], {
+    download: true,
+    header: true,
+    dynamicTyping: true,
+    complete: function(results) {
+      allData = results.data;
+      populateInstansiList(allData);
+      document.getElementById('instansiFilter').value = 'SELURUH K/L/PD PESERTA SPI 2024';
+      applyFilter();
+      document.getElementById('status').innerText = 'Menampilkan data ' + type;
+    }
+  });
+}
+
+function populateInstansiList(data) {
+  const instansiList = document.getElementById('instansiList');
+  const unique = [...new Set(data.map(d => d.instansi).filter(Boolean))].sort();
+  instansiList.innerHTML = unique.map(d => `<option value="${d}">`).join('');
+}
+
+function resetFilterUnit() {
+  document.getElementById('instansiFilter').value = '';
+  filteredData = allData;
+  renderTable(filteredData);
+  renderChart(filteredData, currentType);
+  populateInstansiList(allData);
+}
+
+function applyFilter() {
+  const keyword = document.getElementById('instansiFilter').value.toLowerCase();
+  filteredData = allData.filter(d => (d.instansi || '').toLowerCase() === keyword);
+
+  renderTable(filteredData);
+  renderChart(filteredData, currentType);
+}
+
+function renderTable(data) {
+  const head = document.getElementById('table-head');
+  const body = document.getElementById('table-body');
+  head.innerHTML = '';
+  body.innerHTML = '';
+
+  if (data.length === 0) return;
+
+  const headerRow = '<tr>' + exportColumns.map(h => '<th>' + columnMap[h] + '</th>').join('') + '</tr>';
+  head.innerHTML = headerRow;
+
+  data.forEach(row => {
+    const rowHtml = '<tr>' + exportColumns.map(h => {
+      let val = row[h];
+      if (['target', 'data_blast', 'jumlah_capi'].includes(h)) {
+        val = formatNumber(val);
+      }
+      return '<td style="text-align:' + (isNaN(val) ? 'left' : 'right') + '">' + (val !== undefined ? val : '') + '</td>';
+    }).join('') + '</tr>';
+    body.innerHTML += rowHtml;
+  });
+}
+
+function renderChart(data, type) {
+  const labels = data.map(d => d.unitkerja || '');
+  const capaian = data.map(d => parseFloat(d.persentase_capaian_target || 0));
+  const response = data.map(d => parseFloat(d.persentase_response_rate_online || 0));
+
+  const line100 = {
+    type: 'line',
+    yMin: 100,
+    yMax: 100,
+    borderColor: 'black',
+    borderWidth: 1
+  };
+
+  const lineResponse = {
+    type: 'line',
+    borderColor: 'black',
+    borderWidth: 1
+  };
+
+  if (type === 'eksternal') {
+    lineResponse.yMin = 11.36;
+    lineResponse.yMax = 11.36;
+  } else if (type === 'internal') {
+    lineResponse.yMin = 32.13;
+    lineResponse.yMax = 32.13;
+  } else {
+    lineResponse.yMin = 0;
+    lineResponse.yMax = 0;
+  }
+
+  if (chartCapaian) chartCapaian.destroy();
+  if (chartResponse) chartResponse.destroy();
+
+  chartCapaian = new Chart(document.getElementById('chartCapaian'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '% Capaian Responden',
+        data: capaian,
+        backgroundColor: 'rgba(75, 192, 192, 0.6)'
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: { duration: 800 },
+      plugins: {
+        annotation: { annotations: { line100 } }
+      },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+
+  chartResponse = new Chart(document.getElementById('chartResponse'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '% Response Rate',
+        data: response,
+        backgroundColor: 'rgba(255, 159, 64, 0.6)'
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: { duration: 800 },
+      plugins: {
+        annotation: { annotations: { lineResponse } }
+      },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+}
+
+function downloadExcel() {
+  if (!allData.length) return;
+  const instansi = document.getElementById('instansiFilter').value || 'ALL';
+
+  let exportData;
+  if (instansi === "SELURUH K/L/PD PESERTA SPI 2024") {
+    // Filter hanya yang Unit Kerja-nya SELURUH K/L/PD PESERTA SPI 2024 dan Total
+    exportData = allData.filter(row =>
+      (row.unitkerja === "SELURUH K/L/PD PESERTA SPI 2024" || row.unitkerja === "Total")
+    ).map(row => {
+      const r = {};
+      exportColumns.forEach(k => r[columnMap[k]] = row[k]);
+      return r;
+    });
+  } else {
+    if (!filteredData.length) return;
+    exportData = filteredData.map(row => {
+      const r = {};
+      exportColumns.forEach(k => r[columnMap[k]] = row[k]);
+      return r;
+    });
+  }
+
+  if (!exportData.length) return;
+  const worksheet = XLSX.utils.json_to_sheet(exportData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "DATA");
+  XLSX.writeFile(workbook, `DATA_RESPONSE_RATE_2024_${instansi.replace(/\s+/g, "_")}.xlsx`);
+}
+
+function downloadPDF() {
+  const element = document.getElementById("dashboard-content");
+  const instansi = document.getElementById("instansiFilter").value || "ALL";
+  html2pdf()
+    .from(element)
+    .set({
+      margin: [0, 0, 0, 0],
+      filename: `DATA_RESPONSE_RATE_2024_${instansi.replace(/\s+/g, "_")}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, scrollY: 0 },
+      jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    })
+    .save();
+}
+
+window.onload = function() {
+  loadDataset('eksternal');
+};
+</script>
+
+<footer class="text-center small text-muted mt-5 mb-3">v1.0306252330<br>© Tim SPI 2025 KPK RI</footer>  
+</body>
+</html>
