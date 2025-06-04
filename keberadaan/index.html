@@ -166,7 +166,7 @@ function shadingClass(level) {
 function formatKeberadaan(val) {
   const num = Number(val);
   if (isNaN(num)) return "";
-  return (num * 100).toFixed(1);
+  return Math.round(num * 100);
 }
 
 const KEBERADAAN_CSV_URL = "https://raw.githubusercontent.com/timotiushps/hasilspi24/main/keberadaan.csv";
