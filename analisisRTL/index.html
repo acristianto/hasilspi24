@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -52,7 +51,11 @@
     .custom-table thead { background: #eef3fb; }
     .custom-table th { font-weight: 600; }
     .custom-table { border-radius: 8px; overflow: hidden;}
-    .label-warning { color: #d9534f; font-weight: bold; font-size: 1.02rem; margin: 22px 0 6px 0; }
+    .label-warning { color: #b91c1c; font-weight: bold; font-size: 1.02rem; margin: 22px 0 6px 0; }
+    .k3-card { border-radius: 14px; box-shadow: 0 2px 14px rgba(44,62,80,0.09); background: #fff8f7; padding: 1.2rem 1.4rem; margin-bottom: 2rem; border: 1.5px solid #fad6d6;}
+    .kode3-label { color: #b91c1c; font-weight: bold; font-size: 1.06rem; }
+    .spi-index-red { color: #b91c1c !important; font-weight:bold; }
+    .spi-index-yellow { color: #eab308 !important; font-weight:bold; }
     .spinner-overlay {
       position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
       background: rgba(255,255,255,0.7); z-index: 9999;
@@ -60,7 +63,7 @@
       transition: opacity 0.3s;
     }
     .spinner-border { width: 3rem; height: 3rem; }
-    /* Navbar and sidebar (copied from dashboard) */
+    /* Navbar and sidebar */
     .header-nav {
       display: flex;
       align-items: center;
@@ -96,9 +99,7 @@
       color: #206bc4;
       cursor: default;
     }
-    .mobile-nav {
-      display: none;
-    }
+    .mobile-nav { display: none; }
     .sidebar-overlay {
       display: none;
       position: fixed;
@@ -193,7 +194,7 @@
     <img src="https://elhkpn.kpk.go.id/portal-assets/img/image2.jpeg" alt="Logo KPK" class="logo-kpk">
     <nav class="tab-menu">
       <a href="https://timotiushps.github.io/hasilspi24/responrate">Response Rate</a>
-      <a href="https://timotiushps.github.io/hasilspi24/" >Indeks</a>
+      <a href="https://timotiushps.github.io/hasilspi24/">Indeks</a>
       <a href="https://timotiushps.github.io/hasilspi24/risiko">Tabel Risiko</a>
       <a href="https://timotiushps.github.io/hasilspi24/keberadaan">Keberadaan</a>
       <a href="https://timotiushps.github.io/hasilspi24/analisisRTL" class="active">Analisis RTL</a>
@@ -224,7 +225,7 @@
   </aside>
   
   <div class="container py-4">
-    <h3 class="text-center flex-grow-1 mb-4" style="font-size:1.3rem"><i>Dashboard</i>Analisis Rencana Tindak Lanjut Hasil SPI 2024</h3>
+    <h3 class="text-center flex-grow-1 mb-4" style="font-size:1.3rem"><i>Dashboard</i> Analisis Rencana Tindak Lanjut Hasil SPI 2024</h3>
     <div class="custom-card">
       <div class="mb-3">
         <label for="excelFileInput" class="form-label">Unggah Dokumen Rencana Tindak Lanjut dari JAGA.id di sini:</label>
@@ -284,6 +285,14 @@
         "Waktu Pelaksanaan/Timeline",
         "Risiko/Kendala Terkait"
     ];
+
+    function getIndeksColorClass(val) {
+      const n = parseFloat(val);
+      if (isNaN(n)) return "";
+      if (n < 73) return "spi-index-red";
+      if (n < 78) return "spi-index-yellow";
+      return "";
+    }
 
     // Spinner
     function showSpinner()  { $("#spinner-overlay").show(); }
@@ -442,7 +451,7 @@
                 kode3NotInManual[row["KODE_3"]].push({
                     Dimensi: row["KODE_3"],
                     Variabel: row["KODE_2"],
-                    "Indeks Hasil SPI 2024": row["Value24"],
+                    "Indeks SPI 2024": row["Value24"],
                     "Akar Masalah": row["Referensi_akar_masalah"],
                     "Rekomendasi": row["Referensi_rekomendasi"],
                     "Kode Pertanyaan": row["Index_name"]
@@ -477,42 +486,45 @@
         });
 
         // --- TABEL CSV GITHUB yang tidak tercover Rencana Tindak Lanjut ---
-        Object.keys(kode3NotInManual).forEach(kode3 => {
-            let filteredRows = kode3NotInManual[kode3];
-            if (filteredRows && filteredRows.length > 0) {
+        const kode3Keys = Object.keys(kode3NotInManual).filter(k => kode3NotInManual[k] && kode3NotInManual[k].length > 0);
+        if (kode3Keys.length > 0) {
+            html += `<div class="label-warning">Variabel dari Dimensi yang belum ada dalam Rencana Tindak Lanjut</div>`;
+            kode3Keys.forEach(kode3 => {
+                let filteredRows = kode3NotInManual[kode3];
                 html += `
-                    <div class="label-warning">Variabel dari Dimensi yang belum ada dalam Rencana Tindak Lanjut</div>
-                    <div class="dimensi-title">Dimensi: <span class="text-primary">${kode3}</span></div>
-                    <div class="dimensi-divider"></div>
-                    <div class="table-responsive">
-                        <table class="table table-sm custom-table table-bordered mb-4">
-                            <thead>
-                              <tr>
-                                <th>Dimensi</th>
-                                <th>Variabel</th>
-                                <th>Indeks Hasil SPI 2024</th>
-                                <th>Akar Masalah</th>
-                                <th>Rekomendasi</th>
-                                <th>Kode Pertanyaan</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                                ${filteredRows.map(row => `
-                                    <tr>
-                                        <td>${row["Dimensi"]}</td>
-                                        <td>${row["Variabel"]}</td>
-                                        <td>${row["Indeks Hasil SPI 2024"]}</td>
-                                        <td>${row["Akar Masalah"] || ""}</td>
-                                        <td>${row["Rekomendasi"] || ""}</td>
-                                        <td>${row["Kode Pertanyaan"] || ""}</td>
-                                    </tr>
-                                `).join("")}
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="k3-card">
+                  <div class="dimensi-title kode3-label">${kode3}</div>
+                  <div class="dimensi-divider"></div>
+                  <div class="table-responsive">
+                      <table class="table table-sm custom-table table-bordered mb-4">
+                          <thead>
+                            <tr>
+                              <th class="kode3-label">Dimensi</th>
+                              <th>Variabel</th>
+                              <th>Indeks SPI 2024</th>
+                              <th>Akar Masalah</th>
+                              <th>Rekomendasi</th>
+                              <th>Kode Pertanyaan</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                              ${filteredRows.map(row => `
+                                  <tr>
+                                      <td class="kode3-label">${row["Dimensi"]}</td>
+                                      <td>${row["Variabel"]}</td>
+                                      <td class="${getIndeksColorClass(row["Indeks SPI 2024"])}">${row["Indeks SPI 2024"]}</td>
+                                      <td>${row["Akar Masalah"] || ""}</td>
+                                      <td>${row["Rekomendasi"] || ""}</td>
+                                      <td>${row["Kode Pertanyaan"] || ""}</td>
+                                  </tr>
+                              `).join("")}
+                          </tbody>
+                      </table>
+                  </div>
+                </div>
                 `;
-            }
-        });
+            });
+        }
 
         $('#resultTable').html(html);
     }
