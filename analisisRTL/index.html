@@ -56,6 +56,9 @@
     .kode3-label { color: #b91c1c; font-weight: bold; font-size: 1.06rem; }
     .spi-index-red { color: #b91c1c !important; font-weight:bold; }
     .spi-index-yellow { color: #eab308 !important; font-weight:bold; }
+    .rekap-card { background: #eef3fb; border-radius: 14px; padding: 1rem 1.4rem; box-shadow: 0 2px 12px rgba(44,62,80,0.05); margin-bottom: 1.7rem; }
+    .rekap-table th { background: #e0eafc; }
+    .rekap-title { font-size:1.05rem;font-weight:600;color:#254278;letter-spacing:0.3px;margin-bottom:10px; }
     .spinner-overlay {
       position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
       background: rgba(255,255,255,0.7); z-index: 9999;
@@ -250,7 +253,7 @@
   <footer class="text-center small text-muted mt-5 mb-3">
       v2.11<br>
       © Hak Cipta Milik Tim SPI 2025 KPK RI<br>
-      Segala Penggunaan Data dari <i>dashboard</i> ini harus seizin KPK RI.
+      Segala Penggunaan Data dari <i>dashboard</i> ini harus seizin Direktorat Monitoring KPK RI.
   </footer>
   
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -272,7 +275,6 @@
 
     let tableData = [];
     let uniqueInstansi = [];
-    // Kolom tampil dari unggahan manual (tanpa KODE_3)
     const shownCols = [
         "Instansi",
         "Dimensi",
@@ -294,17 +296,44 @@
       return "";
     }
 
+    function showRekapTable(dimensiManualArr, kode3NotInManualArr) {
+      let maxRows = Math.max(dimensiManualArr.length, kode3NotInManualArr.length);
+      let html = `
+        <div class="rekap-card">
+          <div class="rekap-title">Rekapitulasi Cakupan Dimensi RTL dan Dimensi yang Belum Tercakup RTL</div>
+          <div class="table-responsive mb-2">
+            <table class="table table-sm table-bordered rekap-table mb-0">
+              <thead>
+                <tr>
+                  <th>Dimensi yang Sudah Ada di RTL</th>
+                  <th class="kode3-label">KODE_3 (Dimensi Belum Ada di RTL)</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${
+                  Array.from({length: maxRows}).map((_,i)=>`
+                    <tr>
+                      <td>${dimensiManualArr[i] || '-'}</td>
+                      <td class="kode3-label">${kode3NotInManualArr[i] || '-'}</td>
+                    </tr>
+                  `).join('')
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      return html;
+    }
+
     // Spinner
     function showSpinner()  { $("#spinner-overlay").show(); }
     function hideSpinner()   { $("#spinner-overlay").hide(); }
 
-    // URL RAW CSV dari GitHub
     const csvGithubUrl = 'https://raw.githubusercontent.com/timotiushps/hasilspi24/main/dataset_single_no_dimensi.csv';
     let githubCsvData = [];
 
-    // Mapping Dimensi Manual → Array value KODE_3 (case insensitive, semua ke lower case, strip extra space)
     const dimensiMappingList = [
-        // Internal
         ["Integritas Dalam Pelaksanaan Tugas", [
             "integritas dalam pelaksanaan tugas", "integritas pelaksanaan tugas", "integritas dalam menjalankan tugas",
             "integritas dalam tugas", "integrirtas dalam pelaksanaan tugas", "integritas dalam melaksanakan tugas"
@@ -330,13 +359,11 @@
         ["Perdagangan Pengaruh (Trading in Influence)", [
             "perdagangan pengaruh (trading in influence)", "perdagangan pengaruh", "\"perdagangan pengaruh (trading in influence)\""
         ]],
-        // Eksternal
         ["Integritas Pegawai", ["integritas pegawai"]],
         ["Transparansi dan Keadilan Layanan", [
             "transparansi dan keadilan layanan", "transparansi dan layanan publik", "transparansi & keadilan layanan"
         ]],
         ["Upaya Pencegahan Korupsi", ["upaya pencegahan korupsi"]],
-        // Lainnya
         ["Komitmen Pimpinan", ["komitmen pimpinan"]],
         ["Pelayanan Publik", ["pelayanan publik"]],
         ["Perizinan", ["perizinan"]],
@@ -346,7 +373,6 @@
         ]],
         ["Dimensi", ["dimensi"]]
     ];
-    // Create map: key KODE_3 to Dimensi manual
     const kode3ToDimensiManual = {};
     dimensiMappingList.forEach(([dimensi, kode3Arr])=>{
         kode3Arr.forEach(val=>{ kode3ToDimensiManual[val.trim().toLowerCase()] = dimensi; });
@@ -420,15 +446,14 @@
             return;
         }
 
-        // Ambil semua Dimensi unik dari manual (pakai lower-case normalizer, biar robust)
+        let dimensiManualArr = [...new Set(rowsManual.map(r => (r["Dimensi"]||"").trim()).filter(d => d))];
+
         let dimensiManual = [...new Set(rowsManual.map(r => normal(r["Dimensi"])).filter(d => d))];
 
-        // Data dari GitHub CSV: filter berdasarkan Nama Instansi
         let ghRows = githubCsvData.filter(r =>
             r["Nama Instansi"] && normal(r["Nama Instansi"]) === normal(instansiTerpilih)
         );
 
-        // STEP 1: Filter baris CSV GitHub Value24<78 & filter out KODE_3 kosong/blank/Integritas Instansi
         let ghLowRows = ghRows.filter(row => {
             let v = parseFloat(row["Value24"]);
             let kode3 = normal(row["KODE_3"]);
@@ -436,8 +461,8 @@
             return !isNaN(v) && v < 78;
         });
 
-        // STEP 2: KODE_3 di csv github yang belum "tercover" oleh mapping dimensi manual
-        let kode3NotInManual = {}; // key=KODE_3, value=baris2
+        let kode3NotInManual = {};
+        let kode3NotInManualArr = [];
         ghLowRows.forEach(row => {
             let kode3Norm = normal(row["KODE_3"]);
             let mappedDimensi = kode3ToDimensiManual[kode3Norm];
@@ -447,7 +472,10 @@
                 if (dimensiManual.includes(mappedDimensiNorm)) covered = true;
             }
             if (!covered) {
-                if (!kode3NotInManual[row["KODE_3"]]) kode3NotInManual[row["KODE_3"]] = [];
+                if (!kode3NotInManual[row["KODE_3"]]) {
+                  kode3NotInManual[row["KODE_3"]] = [];
+                  kode3NotInManualArr.push(row["KODE_3"]);
+                }
                 kode3NotInManual[row["KODE_3"]].push({
                     Dimensi: row["KODE_3"],
                     Variabel: row["KODE_2"],
@@ -460,6 +488,9 @@
         });
 
         let html = `<div class="mb-2 mt-4 fw-bold">Data untuk Instansi: <span class="text-primary">${instansiTerpilih}</span></div>`;
+
+        // === TABEL REKAPITULASI CAKUPAN ===
+        html += showRekapTable(dimensiManualArr, kode3NotInManualArr);
 
         // --- TABEL MANUAL (per Dimensi) ---
         let uniqueDimensi = [...new Set(rowsManual.map(r => r["Dimensi"]).filter(d => d))];
