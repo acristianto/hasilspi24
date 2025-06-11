@@ -1,1 +1,521 @@
 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Analisis RTL Hasil SPI 2024</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css" />
+  <style>
+    body { background: #fff; }
+    .angka-indeks { font-size: 1.5rem; font-weight: bold; }
+    .angka-agregat { font-size: 2rem; font-weight: bold; }
+    .hijau { color: green !important; }
+    .kuning { color: orange !important; }
+    .merah { color: red !important; }
+    .custom-card {
+      background: linear-gradient(140deg, #f7fafc 60%, #e9f1fb 100%);
+      border-radius: 18px;
+      box-shadow: 0 4px 20px rgba(44, 62, 80, 0.09);
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+      border: none;
+    }
+    .sub-title {
+      letter-spacing: 2px;
+      font-weight: 800;
+      font-size: 1.17rem;
+      color: #37517e;
+      margin-bottom: 2px;
+      margin-top: 20px;
+    }
+    .group-title {
+      font-weight: 700;
+      font-size: 1.05rem;
+      margin: 25px 0 10px 0;
+      color: #22223b;
+      border-bottom: 1.5px solid #e6e7ec;
+      padding-bottom: 3px;
+      letter-spacing: 0.3px;
+    }
+    .dimensi-title {
+      font-weight: bold;
+      font-size: 1.08rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      color: #234e88;
+      letter-spacing: 0.2px;
+    }
+    .dimensi-divider { border-bottom: 2px solid #b8c3e2; margin-bottom: 12px;}
+    .table-sm th, .table-sm td { font-size: 0.98rem; }
+    .custom-table thead { background: #eef3fb; }
+    .custom-table th { font-weight: 600; }
+    .custom-table { border-radius: 8px; overflow: hidden;}
+    .label-warning { color: #d9534f; font-weight: bold; font-size: 1.02rem; margin: 22px 0 6px 0; }
+    .spinner-overlay {
+      position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
+      background: rgba(255,255,255,0.7); z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.3s;
+    }
+    .spinner-border { width: 3rem; height: 3rem; }
+    /* Navbar and sidebar (copied from dashboard) */
+    .header-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      border-bottom: 1.5px solid #e5e7eb;
+      margin-bottom: 14px;
+      padding: 9px 0 2px 0;
+    }
+    .header-nav .logo-kpk { height: 40px; margin-left: 18px;}
+    .header-nav .logo-spi { height: 40px; margin-right: 18px;}
+    .tab-menu {
+      display: flex;
+      gap: 48px;
+    }
+    .tab-menu a {
+      display: inline-block;
+      font-size: 1.12rem;
+      font-weight: 600;
+      color: #425466;
+      text-decoration: none;
+      padding: 11px 0 8px 0;
+      border-bottom: 2.5px solid transparent;
+      transition: color 0.18s, border-bottom 0.18s;
+      background: none;
+    }
+    .tab-menu a.active,
+    .tab-menu a:hover {
+      color: #206bc4;
+    }
+    .tab-menu a.active {
+      border-bottom: 2.5px solid #206bc4;
+      color: #206bc4;
+      cursor: default;
+    }
+    .mobile-nav {
+      display: none;
+    }
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      z-index: 1010;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(50,70,90,0.25);
+      transition: 0.25s;
+    }
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: -270px;
+      width: 230px;
+      height: 100vh;
+      z-index: 1020;
+      background: #fff;
+      border-right: 1.5px solid #e5e7eb;
+      box-shadow: 2px 0 16px rgba(44,62,80,0.08);
+      padding: 24px 12px 12px 12px;
+      transition: left 0.23s;
+    }
+    .sidebar.open { left: 0; }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    .sidebar-header img { height: 35px; }
+    .sidebar-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .sidebar-menu a {
+      display: block;
+      padding: 11px 12px 9px 12px;
+      font-size: 1.07rem;
+      font-weight: 600;
+      color: #425466;
+      text-decoration: none;
+      border-radius: 6px;
+      margin-bottom: 2px;
+      border-left: 3px solid transparent;
+      transition: color 0.16s, border-left 0.16s, background 0.17s;
+    }
+    .sidebar-menu a.active,
+    .sidebar-menu a:hover {
+      color: #206bc4;
+      background: #f5faff;
+      border-left: 3px solid #206bc4;
+    }
+    .burger {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 2.1rem;
+      color: #37517e;
+      margin-left: 12px;
+      margin-right: 10px;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.14s;
+    }
+    @media (max-width: 991.98px) {
+      .header-nav { display: none; }
+      .mobile-nav {
+        display: flex;
+        align-items: center;
+        height: 56px;
+        background: #fff;
+        border-bottom: 1.5px solid #e5e7eb;
+        margin-bottom: 10px;
+      }
+      .burger { display: block; }
+      .sidebar-overlay.open { display: block; }
+    }
+    @media (max-width: 900px) {
+      .custom-card { padding: 0.8rem; }
+      .table th, .table td { font-size: 0.92rem; }
+      .tab-menu { gap: 18px; }
+      .tab-menu a { font-size: 1rem; padding: 8px 0 5px 0; }
+      .header-nav .logo-kpk, .header-nav .logo-spi { height: 32px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Desktop Navbar -->
+  <div class="header-nav">
+    <img src="https://elhkpn.kpk.go.id/portal-assets/img/image2.jpeg" alt="Logo KPK" class="logo-kpk">
+    <nav class="tab-menu">
+      <a href="https://timotiushps.github.io/hasilspi24/responrate">Response Rate</a>
+      <a href="https://timotiushps.github.io/hasilspi24/" >Indeks</a>
+      <a href="https://timotiushps.github.io/hasilspi24/risiko">Tabel Risiko</a>
+      <a href="https://timotiushps.github.io/hasilspi24/keberadaan">Keberadaan</a>
+      <a href="https://timotiushps.github.io/hasilspi24/analisisRTL" class="active">Analisis RTL</a>
+    </nav>
+    <img src="https://spi.kpk.go.id/img/logo-spi.d5368d4c.png" alt="Logo SPI" class="logo-spi">
+  </div>
+  <!-- Mobile Navbar with burger -->
+  <div class="mobile-nav">
+    <button class="burger" aria-label="Menu" onclick="openSidebar()">&#9776;</button>
+    <div style="flex:1"></div>
+    <span style="font-size:1.05rem;font-weight:700;color:#425466;letter-spacing:1px;">Analisis RTL SPI 2024</span>
+    <div style="flex:1"></div>
+  </div>
+  <!-- Sidebar Mobile -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="https://elhkpn.kpk.go.id/portal-assets/img/image2.jpeg" alt="Logo KPK">
+      <img src="https://spi.kpk.go.id/img/logo-spi.d5368d4c.png" alt="Logo SPI">
+    </div>
+    <nav class="sidebar-menu">
+      <a href="https://timotiushps.github.io/hasilspi24/responrate">Response Rate</a>
+      <a href="https://timotiushps.github.io/hasilspi24/">Indeks</a>
+      <a href="https://timotiushps.github.io/hasilspi24/risiko">Tabel Risiko</a>
+      <a href="https://timotiushps.github.io/hasilspi24/keberadaan">Keberadaan</a>
+      <a href="https://timotiushps.github.io/hasilspi24/analisisRTL" class="active">Analisis RTL</a>
+    </nav>
+  </aside>
+  
+  <div class="container py-4">
+    <h3 class="text-center flex-grow-1 mb-4" style="font-size:1.3rem"><i>Dashboard</i>Analisis Rencana Tindak Lanjut Hasil SPI 2024</h3>
+    <div class="custom-card">
+      <div class="mb-3">
+        <label for="excelFileInput" class="form-label">Unggah Dokumen Rencana Tindak Lanjut dari JAGA.id di sini:</label>
+        <input type="file" class="form-control" id="excelFileInput" accept=".xls,.xlsx,.csv" />
+      </div>
+      <div class="mb-4">
+        <label for="searchInstansi" class="form-label">Ketik Nama Instansi yang akan dianalisis:</label>
+        <input id="searchInstansi" class="form-control" placeholder="Cari instansi..." autocomplete="off" />
+      </div>
+      <div id="resultTable"></div>
+    </div>
+  </div>
+
+  <!-- Spinner loading (hidden by default) -->
+  <div id="spinner-overlay" class="spinner-overlay" style="display:none;">
+    <div>
+      <div class="spinner-border text-primary" role="status"></div>
+      <div class="mt-3 text-center text-primary fw-bold">Memproses data...</div>
+    </div>
+  </div>
+
+  <footer class="text-center small text-muted mt-5 mb-3">
+      v2.11<br>
+      © Hak Cipta Milik Tim SPI 2025 KPK RI<br>
+      Segala Penggunaan Data dari <i>dashboard</i> ini harus seizin KPK RI.
+  </footer>
+  
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script>
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('sidebarOverlay').classList.add('open');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('open');
+    }
+    window.addEventListener('resize', function() {
+      if (window.innerWidth > 991) closeSidebar();
+    });
+
+    let tableData = [];
+    let uniqueInstansi = [];
+    // Kolom tampil dari unggahan manual (tanpa KODE_3)
+    const shownCols = [
+        "Instansi",
+        "Dimensi",
+        "Rekomendasi",
+        "Rencana Aksi",
+        "Kriteria Keberhasilan",
+        "Ukuran Keberhasilan",
+        "Data Dukung",
+        "Penanggung Jawab",
+        "Waktu Pelaksanaan/Timeline",
+        "Risiko/Kendala Terkait"
+    ];
+
+    // Spinner
+    function showSpinner()  { $("#spinner-overlay").show(); }
+    function hideSpinner()   { $("#spinner-overlay").hide(); }
+
+    // URL RAW CSV dari GitHub
+    const csvGithubUrl = 'https://raw.githubusercontent.com/timotiushps/hasilspi24/main/dataset_single_no_dimensi.csv';
+    let githubCsvData = [];
+
+    // Mapping Dimensi Manual → Array value KODE_3 (case insensitive, semua ke lower case, strip extra space)
+    const dimensiMappingList = [
+        // Internal
+        ["Integritas Dalam Pelaksanaan Tugas", [
+            "integritas dalam pelaksanaan tugas", "integritas pelaksanaan tugas", "integritas dalam menjalankan tugas",
+            "integritas dalam tugas", "integrirtas dalam pelaksanaan tugas", "integritas dalam melaksanakan tugas"
+        ]],
+        ["Pengelolaan SDM", [
+            "pengelolaan sdm", "sumber daya manusia", "pengelolaan sumber daya manusia", "\"pengelolaan sdm\""
+        ]],
+        ["Pengelolaan PBJ", [
+            "pengelolaan pbj", "pengelolaan barang dan jasa", "pengadaan barang/jasa", "pbj",
+            "pengelolaan pengadaan barang dan jasa", "pengadaan barang dan jasa (pbj", "pengelolaan pengadaan barang dan jasa.",
+            "\"pengelolaan pbj\""
+        ]],
+        ["Pengelolaan Anggaran", [
+            "pengelolaan anggaran", "\"pengelolaan anggaran\""
+        ]],
+        ["Transparansi", [
+            "transparansi", "\"transparansi\""
+        ]],
+        ["Sosialisasi Antikorupsi", [
+            "sosialisasi antikorupsi", "sosialisasi anti korupsi", "sosisaliasasi anti korupsi",
+            "sosialisasi & sistem anti korupsi", "\"laporan hasil sosialisasibanner anti korupsi\"", "sosialisasi gratifikasi"
+        ]],
+        ["Perdagangan Pengaruh (Trading in Influence)", [
+            "perdagangan pengaruh (trading in influence)", "perdagangan pengaruh", "\"perdagangan pengaruh (trading in influence)\""
+        ]],
+        // Eksternal
+        ["Integritas Pegawai", ["integritas pegawai"]],
+        ["Transparansi dan Keadilan Layanan", [
+            "transparansi dan keadilan layanan", "transparansi dan layanan publik", "transparansi & keadilan layanan"
+        ]],
+        ["Upaya Pencegahan Korupsi", ["upaya pencegahan korupsi"]],
+        // Lainnya
+        ["Komitmen Pimpinan", ["komitmen pimpinan"]],
+        ["Pelayanan Publik", ["pelayanan publik"]],
+        ["Perizinan", ["perizinan"]],
+        ["Penegakan Aturan", ["penegakan aturan"]],
+        ["Kelompok Pemantauan/Pengamatan", [
+            "kelompok pengamatan melekat", "kelompok pemantau mewakili publik"
+        ]],
+        ["Dimensi", ["dimensi"]]
+    ];
+    // Create map: key KODE_3 to Dimensi manual
+    const kode3ToDimensiManual = {};
+    dimensiMappingList.forEach(([dimensi, kode3Arr])=>{
+        kode3Arr.forEach(val=>{ kode3ToDimensiManual[val.trim().toLowerCase()] = dimensi; });
+    });
+
+    $('#excelFileInput').on('change', function(e) {
+        showSpinner();
+        const file = e.target.files[0];
+        if (!file) { hideSpinner(); return; }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            let data = new Uint8Array(e.target.result);
+            let workbook = XLSX.read(data, { type: 'array' });
+            let sheetName = workbook.SheetNames[0];
+            let worksheet = workbook.Sheets[sheetName];
+            let jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+            processUploadedData(jsonData);
+            hideSpinner();
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    function processUploadedData(jsonData) {
+        tableData = jsonData.map(row => {
+            let newRow = {};
+            shownCols.forEach(col => {
+                newRow[col] = row[col] || "";
+            });
+            newRow["KODE_3"] = row["KODE_3"] || "";
+            return newRow;
+        });
+        uniqueInstansi = [...new Set(tableData.map(d => d["Instansi"]).filter(x => x))].sort();
+        $('#searchInstansi').val("");
+        updateAutocomplete();
+        $('#resultTable').html("");
+    }
+
+    function updateAutocomplete() {
+        $("#searchInstansi").autocomplete({
+            source: uniqueInstansi,
+            minLength: 1,
+            select: function(event, ui) {
+                loadGithubCsvData(ui.item.value);
+            }
+        });
+    }
+
+    async function loadGithubCsvData(instansiTerpilih) {
+        showSpinner();
+        try {
+            const response = await fetch(csvGithubUrl);
+            if (!response.ok) throw new Error('Gagal fetch data dari GitHub: ' + response.status);
+            const csvText = await response.text();
+            const results = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+            githubCsvData = results.data;
+            showCombinedTables(instansiTerpilih);
+        } catch (error) {
+            $('#resultTable').html(`<div class="alert alert-danger mt-3">Error saat load data GitHub: ${error.message}</div>`);
+        }
+        hideSpinner();
+    }
+
+    function normal(str) {
+        return (str || "").trim().toLowerCase().replace(/\s+/g, " ");
+    }
+
+    function showCombinedTables(instansiTerpilih) {
+        let rowsManual = tableData.filter(r => r["Instansi"] === instansiTerpilih);
+        if (rowsManual.length === 0) {
+            $('#resultTable').html(`<div class="alert alert-warning mt-3">Data tidak ditemukan untuk instansi: <b>${instansiTerpilih}</b></div>`);
+            return;
+        }
+
+        // Ambil semua Dimensi unik dari manual (pakai lower-case normalizer, biar robust)
+        let dimensiManual = [...new Set(rowsManual.map(r => normal(r["Dimensi"])).filter(d => d))];
+
+        // Data dari GitHub CSV: filter berdasarkan Nama Instansi
+        let ghRows = githubCsvData.filter(r =>
+            r["Nama Instansi"] && normal(r["Nama Instansi"]) === normal(instansiTerpilih)
+        );
+
+        // STEP 1: Filter baris CSV GitHub Value24<78 & filter out KODE_3 kosong/blank/Integritas Instansi
+        let ghLowRows = ghRows.filter(row => {
+            let v = parseFloat(row["Value24"]);
+            let kode3 = normal(row["KODE_3"]);
+            if (!row["KODE_3"] || kode3 === "" || kode3 === "integritas instansi") return false;
+            return !isNaN(v) && v < 78;
+        });
+
+        // STEP 2: KODE_3 di csv github yang belum "tercover" oleh mapping dimensi manual
+        let kode3NotInManual = {}; // key=KODE_3, value=baris2
+        ghLowRows.forEach(row => {
+            let kode3Norm = normal(row["KODE_3"]);
+            let mappedDimensi = kode3ToDimensiManual[kode3Norm];
+            let covered = false;
+            if (mappedDimensi) {
+                let mappedDimensiNorm = normal(mappedDimensi);
+                if (dimensiManual.includes(mappedDimensiNorm)) covered = true;
+            }
+            if (!covered) {
+                if (!kode3NotInManual[row["KODE_3"]]) kode3NotInManual[row["KODE_3"]] = [];
+                kode3NotInManual[row["KODE_3"]].push({
+                    Dimensi: row["KODE_3"],
+                    Variabel: row["KODE_2"],
+                    "Indeks Hasil SPI 2024": row["Value24"],
+                    "Akar Masalah": row["Referensi_akar_masalah"],
+                    "Rekomendasi": row["Referensi_rekomendasi"],
+                    "Kode Pertanyaan": row["Index_name"]
+                });
+            }
+        });
+
+        let html = `<div class="mb-2 mt-4 fw-bold">Data untuk Instansi: <span class="text-primary">${instansiTerpilih}</span></div>`;
+
+        // --- TABEL MANUAL (per Dimensi) ---
+        let uniqueDimensi = [...new Set(rowsManual.map(r => r["Dimensi"]).filter(d => d))];
+        uniqueDimensi.forEach(dimensi => {
+            let groupRows = rowsManual.filter(r => (r["Dimensi"] || "").trim() === dimensi);
+            html += `
+                <div class="dimensi-title">Dimensi: ${dimensi}</div>
+                <div class="dimensi-divider"></div>
+                <div class="table-responsive"><table class="table table-sm custom-table table-bordered">
+                    <thead>
+                      <tr>
+                        ${shownCols.filter(col => col !== "Dimensi" && col !== "Instansi").map(col => `<th>${col}</th>`).join("")}
+                      </tr>
+                    </thead>
+                    <tbody>
+                        ${groupRows.map(row => `
+                            <tr>
+                                ${shownCols.filter(col => col !== "Dimensi" && col !== "Instansi").map(col => `<td>${row[col]}</td>`).join("")}
+                            </tr>
+                        `).join("")}
+                    </tbody>
+                </table></div>
+            `;
+        });
+
+        // --- TABEL CSV GITHUB yang tidak tercover Rencana Tindak Lanjut ---
+        Object.keys(kode3NotInManual).forEach(kode3 => {
+            let filteredRows = kode3NotInManual[kode3];
+            if (filteredRows && filteredRows.length > 0) {
+                html += `
+                    <div class="label-warning">Variabel dari Dimensi yang belum ada dalam Rencana Tindak Lanjut</div>
+                    <div class="dimensi-title">Dimensi: <span class="text-primary">${kode3}</span></div>
+                    <div class="dimensi-divider"></div>
+                    <div class="table-responsive">
+                        <table class="table table-sm custom-table table-bordered mb-4">
+                            <thead>
+                              <tr>
+                                <th>Dimensi</th>
+                                <th>Variabel</th>
+                                <th>Indeks Hasil SPI 2024</th>
+                                <th>Akar Masalah</th>
+                                <th>Rekomendasi</th>
+                                <th>Kode Pertanyaan</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                                ${filteredRows.map(row => `
+                                    <tr>
+                                        <td>${row["Dimensi"]}</td>
+                                        <td>${row["Variabel"]}</td>
+                                        <td>${row["Indeks Hasil SPI 2024"]}</td>
+                                        <td>${row["Akar Masalah"] || ""}</td>
+                                        <td>${row["Rekomendasi"] || ""}</td>
+                                        <td>${row["Kode Pertanyaan"] || ""}</td>
+                                    </tr>
+                                `).join("")}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+        });
+
+        $('#resultTable').html(html);
+    }
+  </script>
+</body>
+</html>
