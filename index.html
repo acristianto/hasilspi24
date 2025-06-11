@@ -173,10 +173,11 @@
   <div class="header-nav">
     <img src="https://elhkpn.kpk.go.id/portal-assets/img/image2.jpeg" alt="Logo KPK" class="logo-kpk">
     <nav class="tab-menu">
-      <a href="https://timotiushps.github.io/hasilspi24/responrate" class="">Response Rate</a>
+      <a href="https://timotiushps.github.io/hasilspi24/responrate">Response Rate</a>
       <a href="https://timotiushps.github.io/hasilspi24/" class="active">Indeks</a>
-      <a href="https://timotiushps.github.io/hasilspi24/risiko" class="">Tabel Risiko</a>
-      <a href="https://timotiushps.github.io/hasilspi24/keberadaan" class="">Keberadaan</a>
+      <a href="https://timotiushps.github.io/hasilspi24/risiko">Tabel Risiko</a>
+      <a href="https://timotiushps.github.io/hasilspi24/keberadaan">Keberadaan</a>
+      <a href="https://timotiushps.github.io/hasilspi24/analisisRTL">Analisis RTL</a>
     </nav>
     <img src="https://spi.kpk.go.id/img/logo-spi.d5368d4c.png" alt="Logo SPI" class="logo-spi">
   </div>
@@ -195,10 +196,11 @@
       <img src="https://spi.kpk.go.id/img/logo-spi.d5368d4c.png" alt="Logo SPI">
     </div>
     <nav class="sidebar-menu">
-      <a href="https://timotiushps.github.io/hasilspi24/responrate" class="">Response Rate</a>
+      <a href="https://timotiushps.github.io/hasilspi24/responrate">Response Rate</a>
       <a href="https://timotiushps.github.io/hasilspi24/" class="active">Indeks</a>
-      <a href="https://timotiushps.github.io/hasilspi24/risiko" class="">Tabel Risiko</a>
-      <a href="https://timotiushps.github.io/hasilspi24/keberadaan" class="">Keberadaan</a>
+      <a href="https://timotiushps.github.io/hasilspi24/risiko">Tabel Risiko</a>
+      <a href="https://timotiushps.github.io/hasilspi24/keberadaan">Keberadaan</a>
+      <a href="https://timotiushps.github.io/hasilspi24/analisisRTL">Analisis RTL</a>
     </nav>
   </aside>
 
@@ -236,7 +238,9 @@
   <div class="row mb-4">
     <div class="col-12">
       <div class="custom-card">
-        <h6 class="text-center sub-title">Tren Indeks (2021–2024)</h6>
+        <h6 class="text-center sub-title mb-2">Tren Indeks (2021–2024)</h6>
+        <!-- Manual legend warna di bawah judul -->
+        <div id="lineChartIndeksLegend"></div>
         <canvas id="lineChartIndeks"></canvas>
       </div>
     </div>
@@ -280,12 +284,18 @@ window.addEventListener('resize', function() {
   if (window.innerWidth > 991) closeSidebar();
 });
 
-// ----- Seluruh script dashboard (tidak diubah, paste seluruh script aslinya di sini) -----
 let rawData = [], radarChart, barChart, lineChartIndeks, lineChartFaktor;
 let dataInternal = [], dataEksternal = [], dataEksper = [];
 let dataUnitKerjaInternal = [], dataUnitKerjaEksternal = [], dataUnitKerjaEksper = [];
 let kelompokAktif = "Internal";
 let radarKomponenChart = null;
+
+const chartLineLegendColors = [
+  { label: "Agregat", color: "#000" },
+  { label: "Internal", color: "#28a745" },
+  { label: "Eksternal", color: "#ffc107" },
+  { label: "Eksper", color: "#dc3545" }
+];
 
 function getColorClass(value) {
   if (value === undefined || value === null || value === "" || isNaN(value)) return "";
@@ -339,6 +349,7 @@ function updateDashboard() {
       <div class="text-center"><div class="angka-indeks ${getColor(nilai.faktor)}">${nilai.faktor ?? "-"}</div><div class="small text-muted">(Faktor Koreksi)</div></div>
     </div>`;
 
+  // --- RADAR CHART AGREGAT (tanpa angka label/titik) ---
   if (radarChart) radarChart.destroy();
   radarChart = new Chart(document.getElementById("radarChart"), {
     type: "radar",
@@ -354,8 +365,11 @@ function updateDashboard() {
     options: {
       responsive: true,
       legend: { display: true },
-      scale: { ticks: { beginAtZero: true, max: 100 } }
-    }
+      scale: { ticks: { beginAtZero: true, max: 100 } },
+      plugins: { datalabels: { display: false } },
+      tooltips: { enabled: true }
+    },
+    plugins: [Chart.plugins.getAll().find(p => p.id === "datalabels")]
   });
 
   if (barChart) barChart.destroy();
@@ -379,27 +393,39 @@ function updateDashboard() {
   });
 
   if (lineChartIndeks) lineChartIndeks.destroy();
+  // --- MANUAL LEGEND di bawah judul (bukan legend Chart.js built-in) ---
+  const legendHtml = `<div class="chart-custom-legend d-flex flex-wrap gap-3 justify-content-center mb-2" style="margin-bottom:4px;">
+    ${chartLineLegendColors.map(d => `<span style="display:inline-flex;align-items:center;margin-right:20px;font-size:0.98rem;">
+      <span style="display:inline-block;width:18px;height:4px;background:${d.color};border-radius:2px;margin-right:8px;"></span>
+      ${d.label}
+    </span>`).join("")}
+  </div>`;
+  document.getElementById("lineChartIndeksLegend").innerHTML = legendHtml;
+
+  // --- LINE CHART INDEKS tanpa legend Chart.js ---
   lineChartIndeks = new Chart(document.getElementById("lineChartIndeks"), {
     plugins: [Chart.plugins.getAll().find(p => p.id === "datalabels")],
     type: "line",
     data: {
       labels: ["2021", "2022", "2023", "2024"],
       datasets: [
-        { label: "Agregat", data: getValsOverYears("Agregat"), borderColor: "#000", fill: false },
-        { label: "Internal", data: getValsOverYears("Internal"), borderColor: "#28a745", fill: false },
-        { label: "Eksternal", data: getValsOverYears("Eksternal"), borderColor: "#ffc107", fill: false },
-        { label: "Eksper", data: getValsOverYears("Eksper"), borderColor: "#dc3545", fill: false }
+        { label: "Agregat", data: getValsOverYears("Agregat"), borderColor: "#000", fill: false, pointRadius: 3, pointHoverRadius: 6 },
+        { label: "Internal", data: getValsOverYears("Internal"), borderColor: "#28a745", fill: false, pointRadius: 3, pointHoverRadius: 6 },
+        { label: "Eksternal", data: getValsOverYears("Eksternal"), borderColor: "#ffc107", fill: false, pointRadius: 3, pointHoverRadius: 6 },
+        { label: "Eksper", data: getValsOverYears("Eksper"), borderColor: "#dc3545", fill: false, pointRadius: 3, pointHoverRadius: 6 }
       ]
     },
     options: {
       responsive: true,
-      legend: { display: false },
-      plugins: {
-        datalabels: {
-          anchor: 'end',
-          align: 'top',
-          font: { weight: 'bold' },
-          formatter: v => v.toFixed(1)
+      legend: { display: false }, // HIDE built-in legend
+      plugins: { datalabels: { display: false } },
+      tooltips: {
+        enabled: true,
+        callbacks: {
+          label: function(tooltipItem, data) {
+            let datasetLabel = data.datasets[tooltipItem.datasetIndex].label || '';
+            return datasetLabel + ': ' + (tooltipItem.yLabel ?? '');
+          }
         }
       },
       scales: {
@@ -541,7 +567,7 @@ function tampilkanTabelRadarKomponen() {
   `;
   document.getElementById("tabelDetailKomponen").innerHTML = html;
 
-  // Radar (multi-year overlay)
+  // Radar detail (tanpa label angka)
   if (kelompokAktif === "Eksper") {
     document.getElementById("radarKomponenChart").style.display = "none";
   } else {
@@ -590,18 +616,16 @@ function tampilkanTabelRadarKomponen() {
         },
         plugins: {
           datalabels: {
-            display: true,
-            font: { size: 7 }
+            display: false
           }
         }
       },
-      plugins: [ChartDataLabels]
+      plugins: [Chart.plugins.getAll().find(p => p.id === "datalabels")]
     });
   }
   tampilkanUnitKerjaSection();
 }
 
-// Pilihan Unit Kerja dan Tabel Value24
 function tampilkanUnitKerjaSection() {
   const instansi = document.getElementById("instansiInput").value;
   let dataset = [];
@@ -711,9 +735,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 </script>
 
 <footer class="text-center small text-muted mt-5 mb-3">
-    v1.0406251630<br>
+    v2.11<br>
     © Hak Cipta Milik Tim SPI 2025 KPK RI<br>
-    Segala Penggunaan Data dari <i>dashboard</i> ini harus seizin KPK RI.
-  </footer>
+    Segala Penggunaan Data dari <i>dashboard</i> ini harus seizin Direktorat Monitoring KPK RI.
+</footer>
 </body>
 </html>
