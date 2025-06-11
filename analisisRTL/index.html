@@ -8,11 +8,6 @@
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css" />
   <style>
     body { background: #fff; }
-    .angka-indeks { font-size: 1.5rem; font-weight: bold; }
-    .angka-agregat { font-size: 2rem; font-weight: bold; }
-    .hijau { color: green !important; }
-    .kuning { color: orange !important; }
-    .merah { color: red !important; }
     .custom-card {
       background: linear-gradient(140deg, #f7fafc 60%, #e9f1fb 100%);
       border-radius: 18px;
@@ -20,23 +15,6 @@
       padding: 1.5rem;
       margin-bottom: 2.5rem;
       border: none;
-    }
-    .sub-title {
-      letter-spacing: 2px;
-      font-weight: 800;
-      font-size: 1.17rem;
-      color: #37517e;
-      margin-bottom: 2px;
-      margin-top: 20px;
-    }
-    .group-title {
-      font-weight: 700;
-      font-size: 1.05rem;
-      margin: 25px 0 10px 0;
-      color: #22223b;
-      border-bottom: 1.5px solid #e6e7ec;
-      padding-bottom: 3px;
-      letter-spacing: 0.3px;
     }
     .dimensi-title {
       font-weight: bold;
@@ -67,118 +45,32 @@
     }
     .spinner-border { width: 3rem; height: 3rem; }
     /* Navbar and sidebar */
-    .header-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #fff;
-      border-bottom: 1.5px solid #e5e7eb;
-      margin-bottom: 14px;
-      padding: 9px 0 2px 0;
-    }
+    .header-nav { display: flex; align-items: center; justify-content: space-between; background: #fff; border-bottom: 1.5px solid #e5e7eb; margin-bottom: 14px; padding: 9px 0 2px 0;}
     .header-nav .logo-kpk { height: 40px; margin-left: 18px;}
     .header-nav .logo-spi { height: 40px; margin-right: 18px;}
-    .tab-menu {
-      display: flex;
-      gap: 48px;
-    }
+    .tab-menu { display: flex; gap: 48px; }
     .tab-menu a {
-      display: inline-block;
-      font-size: 1.12rem;
-      font-weight: 600;
-      color: #425466;
-      text-decoration: none;
-      padding: 11px 0 8px 0;
-      border-bottom: 2.5px solid transparent;
-      transition: color 0.18s, border-bottom 0.18s;
-      background: none;
+      display: inline-block; font-size: 1.12rem; font-weight: 600; color: #425466; text-decoration: none;
+      padding: 11px 0 8px 0; border-bottom: 2.5px solid transparent;
+      transition: color 0.18s, border-bottom 0.18s; background: none;
     }
     .tab-menu a.active,
-    .tab-menu a:hover {
-      color: #206bc4;
-    }
-    .tab-menu a.active {
-      border-bottom: 2.5px solid #206bc4;
-      color: #206bc4;
-      cursor: default;
-    }
+    .tab-menu a:hover { color: #206bc4; }
+    .tab-menu a.active { border-bottom: 2.5px solid #206bc4; color: #206bc4; cursor: default;}
     .mobile-nav { display: none; }
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      z-index: 1010;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(50,70,90,0.25);
-      transition: 0.25s;
-    }
-    .sidebar {
-      display: flex;
-      flex-direction: column;
-      position: fixed;
-      top: 0; left: -270px;
-      width: 230px;
-      height: 100vh;
-      z-index: 1020;
-      background: #fff;
-      border-right: 1.5px solid #e5e7eb;
-      box-shadow: 2px 0 16px rgba(44,62,80,0.08);
-      padding: 24px 12px 12px 12px;
-      transition: left 0.23s;
-    }
+    .sidebar-overlay { display: none; position: fixed; z-index: 1010; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(50,70,90,0.25); transition: 0.25s; }
+    .sidebar { display: flex; flex-direction: column; position: fixed; top: 0; left: -270px; width: 230px; height: 100vh; z-index: 1020; background: #fff; border-right: 1.5px solid #e5e7eb; box-shadow: 2px 0 16px rgba(44,62,80,0.08); padding: 24px 12px 12px 12px; transition: left 0.23s;}
     .sidebar.open { left: 0; }
-    .sidebar-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 18px;
-      margin-bottom: 24px;
-    }
+    .sidebar-header { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 24px;}
     .sidebar-header img { height: 35px; }
-    .sidebar-menu {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .sidebar-menu a {
-      display: block;
-      padding: 11px 12px 9px 12px;
-      font-size: 1.07rem;
-      font-weight: 600;
-      color: #425466;
-      text-decoration: none;
-      border-radius: 6px;
-      margin-bottom: 2px;
-      border-left: 3px solid transparent;
-      transition: color 0.16s, border-left 0.16s, background 0.17s;
-    }
+    .sidebar-menu { display: flex; flex-direction: column; gap: 2px;}
+    .sidebar-menu a { display: block; padding: 11px 12px 9px 12px; font-size: 1.07rem; font-weight: 600; color: #425466; text-decoration: none; border-radius: 6px; margin-bottom: 2px; border-left: 3px solid transparent; transition: color 0.16s, border-left 0.16s, background 0.17s;}
     .sidebar-menu a.active,
-    .sidebar-menu a:hover {
-      color: #206bc4;
-      background: #f5faff;
-      border-left: 3px solid #206bc4;
-    }
-    .burger {
-      display: none;
-      background: none;
-      border: none;
-      font-size: 2.1rem;
-      color: #37517e;
-      margin-left: 12px;
-      margin-right: 10px;
-      cursor: pointer;
-      line-height: 1;
-      transition: color 0.14s;
-    }
+    .sidebar-menu a:hover { color: #206bc4; background: #f5faff; border-left: 3px solid #206bc4;}
+    .burger { display: none; background: none; border: none; font-size: 2.1rem; color: #37517e; margin-left: 12px; margin-right: 10px; cursor: pointer; line-height: 1; transition: color 0.14s;}
     @media (max-width: 991.98px) {
       .header-nav { display: none; }
-      .mobile-nav {
-        display: flex;
-        align-items: center;
-        height: 56px;
-        background: #fff;
-        border-bottom: 1.5px solid #e5e7eb;
-        margin-bottom: 10px;
-      }
+      .mobile-nav { display: flex; align-items: center; height: 56px; background: #fff; border-bottom: 1.5px solid #e5e7eb; margin-bottom: 10px; }
       .burger { display: block; }
       .sidebar-overlay.open { display: block; }
     }
@@ -300,13 +192,13 @@
       let maxRows = Math.max(dimensiManualArr.length, kode3NotInManualArr.length);
       let html = `
         <div class="rekap-card">
-          <div class="rekap-title">Rekapitulasi Cakupan Dimensi RTL dan Dimensi yang Belum Tercakup RTL</div>
+          <div class="rekap-title">Rekapitulasi Cakupan Dimensi RTL dan Dimensi yang Belum Ada di RTL</div>
           <div class="table-responsive mb-2">
             <table class="table table-sm table-bordered rekap-table mb-0">
               <thead>
                 <tr>
                   <th>Dimensi yang Sudah Ada di RTL</th>
-                  <th class="kode3-label">KODE_3 (Dimensi Belum Ada di RTL)</th>
+                  <th class="kode3-label">Dimensi Belum Ada di RTL</th>
                 </tr>
               </thead>
               <tbody>
@@ -333,6 +225,7 @@
     const csvGithubUrl = 'https://raw.githubusercontent.com/timotiushps/hasilspi24/main/dataset_single_no_dimensi.csv';
     let githubCsvData = [];
 
+    // Mapping Dimensi → KODE_3
     const dimensiMappingList = [
         ["Integritas Dalam Pelaksanaan Tugas", [
             "integritas dalam pelaksanaan tugas", "integritas pelaksanaan tugas", "integritas dalam menjalankan tugas",
@@ -447,44 +340,38 @@
         }
 
         let dimensiManualArr = [...new Set(rowsManual.map(r => (r["Dimensi"]||"").trim()).filter(d => d))];
-
         let dimensiManual = [...new Set(rowsManual.map(r => normal(r["Dimensi"])).filter(d => d))];
 
+        // ===== Filter github data =====
         let ghRows = githubCsvData.filter(r =>
             r["Nama Instansi"] && normal(r["Nama Instansi"]) === normal(instansiTerpilih)
         );
-
-        let ghLowRows = ghRows.filter(row => {
-            let v = parseFloat(row["Value24"]);
-            let kode3 = normal(row["KODE_3"]);
-            if (!row["KODE_3"] || kode3 === "" || kode3 === "integritas instansi") return false;
-            return !isNaN(v) && v < 78;
-        });
-
+        // Ambil semua KODE_2=KODE_3 & Value24<78 yang belum ada di dimensi manual
         let kode3NotInManual = {};
         let kode3NotInManualArr = [];
-        ghLowRows.forEach(row => {
+        ghRows.forEach(row => {
+            let v = parseFloat(row["Value24"]);
             let kode3Norm = normal(row["KODE_3"]);
-            let mappedDimensi = kode3ToDimensiManual[kode3Norm];
-            let covered = false;
-            if (mappedDimensi) {
-                let mappedDimensiNorm = normal(mappedDimensi);
-                if (dimensiManual.includes(mappedDimensiNorm)) covered = true;
-            }
-            if (!covered) {
-                if (!kode3NotInManual[row["KODE_3"]]) {
-                  kode3NotInManual[row["KODE_3"]] = [];
-                  kode3NotInManualArr.push(row["KODE_3"]);
+            let kode2Norm = normal(row["KODE_2"]);
+            if (!row["KODE_3"] || kode3Norm === "" || kode3Norm === "integritas instansi") return;
+            if (kode3Norm === kode2Norm && !isNaN(v) && v < 78) {
+                let mappedDimensi = kode3ToDimensiManual[kode3Norm];
+                let covered = false;
+                if (mappedDimensi) {
+                    let mappedDimensiNorm = normal(mappedDimensi);
+                    if (dimensiManual.includes(mappedDimensiNorm)) covered = true;
                 }
-                kode3NotInManual[row["KODE_3"]].push({
-                    Dimensi: row["KODE_3"],
-                    Variabel: row["KODE_2"],
-                    "Indeks SPI 2024": row["Value24"],
-                    "Akar Masalah": row["Referensi_akar_masalah"],
-                    "Rekomendasi": row["Referensi_rekomendasi"],
-                    "Kode Pertanyaan": row["Index_name"]
-                });
+                if (!covered) {
+                    if (!kode3NotInManual[row["KODE_3"]]) {
+                      kode3NotInManual[row["KODE_3"]] = [];
+                      kode3NotInManualArr.push(row["KODE_3"]);
+                    }
+                }
             }
+        });
+        // Untuk setiap KODE_3 di atas, kelompokkan SEMUA baris KODE_2 yang Value24<78 (meskipun KODE_2 != KODE_3)
+        kode3NotInManualArr.forEach(kode3 => {
+          kode3NotInManual[kode3] = ghRows.filter(row => row["KODE_3"] === kode3 && parseFloat(row["Value24"]) < 78);
         });
 
         let html = `<div class="mb-2 mt-4 fw-bold">Data untuk Instansi: <span class="text-primary">${instansiTerpilih}</span></div>`;
@@ -541,12 +428,12 @@
                           <tbody>
                               ${filteredRows.map(row => `
                                   <tr>
-                                      <td class="kode3-label">${row["Dimensi"]}</td>
-                                      <td>${row["Variabel"]}</td>
-                                      <td class="${getIndeksColorClass(row["Indeks SPI 2024"])}">${row["Indeks SPI 2024"]}</td>
-                                      <td>${row["Akar Masalah"] || ""}</td>
-                                      <td>${row["Rekomendasi"] || ""}</td>
-                                      <td>${row["Kode Pertanyaan"] || ""}</td>
+                                      <td class="kode3-label">${row["KODE_3"]}</td>
+                                      <td>${row["KODE_2"]}</td>
+                                      <td class="${getIndeksColorClass(row["Value24"])}">${row["Value24"]}</td>
+                                      <td>${row["Referensi_akar_masalah"] || ""}</td>
+                                      <td>${row["Referensi_rekomendasi"] || ""}</td>
+                                      <td>${row["Index_name"] || ""}</td>
                                   </tr>
                               `).join("")}
                           </tbody>
