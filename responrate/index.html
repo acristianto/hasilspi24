@@ -150,6 +150,33 @@
       .tab-menu a { font-size: 1rem; padding: 8px 0 5px 0; }
       .header-nav .logo-kpk, .header-nav .logo-spi { height: 32px; }
     }
+    /* --- Spoiler Button --- */
+    .spoiler-btn {
+      margin:10px 0 6px 0; padding:7px 22px; 
+      background:#206bc4;color:white;
+      border:none; border-radius:7px; font-weight:600; cursor:pointer;}
+    .spoiler-btn:hover {background:#174e91;}
+
+    /* --- Export Buttons --- */
+    .export-btn {
+      display: inline-flex;
+      align-items: center;
+      font-weight:600;
+      border-radius:7px;
+      border:none;
+      padding:7px 22px;
+      margin: 10px 8px 10px 0;
+      font-size:1rem;
+      cursor:pointer;
+      transition: background 0.18s;
+      gap:8px;
+    }
+    .btn-excel { background: #1b813e; color: #fff;}
+    .btn-excel:hover { background: #12682e;}
+    .btn-pdf { background: #cb2026; color: #fff;}
+    .btn-pdf:hover { background: #a1151a;}
+    .export-btn svg {vertical-align:middle;}
+    .spoiler-content {margin-bottom:30px;}
   </style>
 </head>
 <body>
@@ -193,28 +220,51 @@
     <h2><i>DASHBOARD</i> RESPONSE RATE SPI 2024</h2>
   </header>
 
-  <div>
-    <button onclick="loadDataset('eksternal')">Tampilkan Data Eksternal</button>
-    <button onclick="loadDataset('internal')">Tampilkan Data Internal</button>
-    <button onclick="downloadExcel()">SIMPAN KE EXCEL</button>
-    <button onclick="downloadPDF()">SIMPAN KE PDF</button>
+  <div style="margin-bottom:0;">
+    <button class="export-btn btn-excel" onclick="downloadExcel()" title="Simpan ke Excel">
+      <!-- Excel SVG -->
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><rect x="2" y="3" width="16" height="14" rx="2" fill="#1b813e"/><text x="5" y="15" font-size="10" font-weight="bold" fill="#fff">X</text></svg>
+      SIMPAN KE EXCEL
+    </button>
+    <button class="export-btn btn-pdf" onclick="downloadPDF()" title="Simpan ke PDF">
+      <!-- PDF SVG -->
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><rect x="2" y="3" width="16" height="14" rx="2" fill="#cb2026"/><text x="5" y="15" font-size="10" font-weight="bold" fill="#fff">PDF</text></svg>
+      SIMPAN KE PDF
+    </button>
   </div>
 
+  <!-- Filter instansi satu saja, dari data internal -->
   <label for="instansiFilter">Filter Instansi:</label><br>
-  <input list="instansiList" id="instansiFilter" placeholder="Ketik nama instansi..." oninput="applyFilter()">
+  <input list="instansiList" id="instansiFilter" placeholder="Ketik nama instansi..." oninput="applyFilterAll()">
   <datalist id="instansiList"></datalist><br>
 
-  <p id="status">Memuat data...</p>
-  <table id="data-table">
-    <thead id="table-head"></thead>
-    <tbody id="table-body"></tbody>
+  <!-- URUTAN INTERNAL DULU, BARU EKSTERNAL -->
+  <p id="status-internal">Memuat data internal...</p>
+  <table id="data-table-internal">
+    <thead id="table-head-internal"></thead>
+    <tbody id="table-body-internal"></tbody>
   </table>
 
-  <div class="chart-container">
-    <canvas id="chartCapaian" width="900" height="400"></canvas>
+  <button class="spoiler-btn" onclick="toggleSpoiler('spoiler-internal')">Tampilkan Grafik Internal</button>
+  <div class="spoiler-content" id="spoiler-internal" style="display:none;">
+    <div style="display: flex; gap: 24px; margin: 18px 0;">
+      <canvas id="chartCapaianInternal" width="840" height="600"></canvas>
+      <canvas id="chartResponseInternal" width="840" height="600"></canvas>
+    </div>
   </div>
-  <div class="chart-container">
-    <canvas id="chartResponse" width="900" height="400"></canvas>
+
+  <p id="status-eksternal">Memuat data eksternal...</p>
+  <table id="data-table-eksternal">
+    <thead id="table-head-eksternal"></thead>
+    <tbody id="table-body-eksternal"></tbody>
+  </table>
+
+  <button class="spoiler-btn" onclick="toggleSpoiler('spoiler-eksternal')">Tampilkan Grafik Eksternal</button>
+  <div class="spoiler-content" id="spoiler-eksternal" style="display:none;">
+    <div style="display: flex; gap: 24px; margin: 18px 0;">
+      <canvas id="chartCapaianEksternal" width="840" height="600"></canvas>
+      <canvas id="chartResponseEksternal" width="840" height="600"></canvas>
+    </div>
   </div>
 </div>
 
@@ -238,11 +288,8 @@ var urlMap = {
   "internal": "https://raw.githubusercontent.com/timotiushps/tesdashboardspi24/main/rekap_response_rate_internal.csv"
 };
 
-var chartCapaian = null;
-var chartResponse = null;
-var allData = [];
-var filteredData = [];
-var currentType = 'eksternal';
+var allData = { eksternal: [], internal: [] };
+var filteredData = { eksternal: [], internal: [] };
 
 const columnMap = {
   instansi: "Instansi",
@@ -253,110 +300,112 @@ const columnMap = {
   persentase_response_rate_online: "% Response Rate",
   jumlah_capi: "Jumlah Responden CAPI"
 };
-
 const exportColumns = Object.keys(columnMap);
+
+var chartCapaianEksternal = null, chartResponseEksternal = null;
+var chartCapaianInternal = null, chartResponseInternal = null;
 
 function formatNumber(n) {
   if (!n && n !== 0) return "";
   return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
-function loadDataset(type) {
-  currentType = type;
-  document.getElementById('status').innerText = 'Memuat data ' + type + '...';
+function loadDataset(type, callback) {
+  document.getElementById('status-' + type).innerText = 'Memuat data ' + type + '...';
   Papa.parse(urlMap[type], {
     download: true,
     header: true,
     dynamicTyping: true,
     complete: function(results) {
-      allData = results.data;
-      populateInstansiList(allData);
-      document.getElementById('instansiFilter').value = 'SELURUH K/L/PD PESERTA SPI 2024';
-      applyFilter();
-      document.getElementById('status').innerText = 'Menampilkan data ' + type;
+      allData[type] = results.data;
+      document.getElementById('status-' + type).innerText = 'Menampilkan data ' + type;
+      if(callback) callback();
     }
   });
 }
 
-function populateInstansiList(data) {
-  const instansiList = document.getElementById('instansiList');
-  const unique = [...new Set(data.map(d => d.instansi).filter(Boolean))].sort();
-  instansiList.innerHTML = unique.map(d => `<option value="${d}">`).join('');
+// Datalist instansi hanya dari INTERNAL
+function populateInstansiList() {
+  const internal = allData.internal.map(d => d.instansi).filter(Boolean);
+  const unique = Array.from(new Set([...internal, "SELURUH K/L/PD PESERTA SPI 2024"])).sort();
+  document.getElementById('instansiList').innerHTML = unique.map(d => `<option value="${d}">`).join('');
 }
 
-function resetFilterUnit() {
-  document.getElementById('instansiFilter').value = '';
-  filteredData = allData;
-  renderTable(filteredData);
-  renderChart(filteredData, currentType);
-  populateInstansiList(allData);
+function applyFilterAll() {
+  const keyword = (document.getElementById('instansiFilter').value || '').toLowerCase();
+  if(keyword === '' || keyword === "seluruh k/l/pd peserta spi 2024") {
+    // Dashboard hanya tampilkan agregat nasional (unitkerja=SELURUH K/L/PD PESERTA SPI 2024, case-insensitive)
+    filteredData.internal = allData.internal.filter(row =>
+      String(row.unitkerja || '').toLowerCase() === "seluruh k/l/pd peserta spi 2024"
+    );
+    filteredData.eksternal = allData.eksternal.filter(row =>
+      String(row.unitkerja || '').toLowerCase() === "seluruh k/l/pd peserta spi 2024"
+    );
+  } else {
+    filteredData.internal = allData.internal.filter(d => (d.instansi || '').toLowerCase() === keyword);
+    filteredData.eksternal = allData.eksternal.filter(d => (d.instansi || '').toLowerCase() === keyword);
+  }
+  renderTable(filteredData.internal, "internal");
+  renderTable(filteredData.eksternal, "eksternal");
+  renderChartAll();
 }
 
-function applyFilter() {
-  const keyword = document.getElementById('instansiFilter').value.toLowerCase();
-  filteredData = allData.filter(d => (d.instansi || '').toLowerCase() === keyword);
-
-  renderTable(filteredData);
-  renderChart(filteredData, currentType);
-}
-
-function renderTable(data) {
-  const head = document.getElementById('table-head');
-  const body = document.getElementById('table-body');
+function renderTable(data, type) {
+  const head = document.getElementById('table-head-' + type);
+  const body = document.getElementById('table-body-' + type);
   head.innerHTML = '';
   body.innerHTML = '';
-
-  if (data.length === 0) return;
-
+  if (data.length === 0) {
+    body.innerHTML = '<tr><td colspan="' + exportColumns.length + '" style="text-align:center">Tidak ada data</td></tr>';
+    return;
+  }
   const headerRow = '<tr>' + exportColumns.map(h => '<th>' + columnMap[h] + '</th>').join('') + '</tr>';
   head.innerHTML = headerRow;
-
   data.forEach(row => {
     const rowHtml = '<tr>' + exportColumns.map(h => {
       let val = row[h];
-      if (['target', 'data_blast', 'jumlah_capi'].includes(h)) {
-        val = formatNumber(val);
-      }
+      if (['target', 'data_blast', 'jumlah_capi'].includes(h)) val = formatNumber(val);
       return '<td style="text-align:' + (isNaN(val) ? 'left' : 'right') + '">' + (val !== undefined ? val : '') + '</td>';
     }).join('') + '</tr>';
     body.innerHTML += rowHtml;
   });
 }
 
+function renderChartAll() {
+  renderChart(filteredData.internal, "internal");
+  renderChart(filteredData.eksternal, "eksternal");
+}
+
 function renderChart(data, type) {
+  let chartCapaian, chartResponse, idCapaian, idResponse;
+  if(type === "eksternal") {
+    idCapaian = "chartCapaianEksternal";
+    idResponse = "chartResponseEksternal";
+    chartCapaian = chartCapaianEksternal;
+    chartResponse = chartResponseEksternal;
+  } else {
+    idCapaian = "chartCapaianInternal";
+    idResponse = "chartResponseInternal";
+    chartCapaian = chartCapaianInternal;
+    chartResponse = chartResponseInternal;
+  }
   const labels = data.map(d => d.unitkerja || '');
   const capaian = data.map(d => parseFloat(d.persentase_capaian_target || 0));
   const response = data.map(d => parseFloat(d.persentase_response_rate_online || 0));
 
-  const line100 = {
-    type: 'line',
-    yMin: 100,
-    yMax: 100,
-    borderColor: 'black',
-    borderWidth: 1
-  };
-
+  const line100 = { type: 'line', yMin: 100, yMax: 100, borderColor: 'black', borderWidth: 1 };
   const lineResponse = {
     type: 'line',
     borderColor: 'black',
-    borderWidth: 1
+    borderWidth: 1,
+    yMin: (type === 'eksternal') ? 11.36 : 32.13,
+    yMax: (type === 'eksternal') ? 11.36 : 32.13,
   };
 
-  if (type === 'eksternal') {
-    lineResponse.yMin = 11.36;
-    lineResponse.yMax = 11.36;
-  } else if (type === 'internal') {
-    lineResponse.yMin = 32.13;
-    lineResponse.yMax = 32.13;
-  } else {
-    lineResponse.yMin = 0;
-    lineResponse.yMax = 0;
-  }
+  if(chartCapaian) chartCapaian.destroy();
+  if(chartResponse) chartResponse.destroy();
 
-  if (chartCapaian) chartCapaian.destroy();
-  if (chartResponse) chartResponse.destroy();
-
-  chartCapaian = new Chart(document.getElementById('chartCapaian'), {
+  chartCapaian = new Chart(document.getElementById(idCapaian), {
     type: 'bar',
     data: {
       labels: labels,
@@ -367,16 +416,13 @@ function renderChart(data, type) {
       }]
     },
     options: {
-      responsive: true,
+      responsive: false,
       animation: { duration: 800 },
-      plugins: {
-        annotation: { annotations: { line100 } }
-      },
+      plugins: { annotation: { annotations: { line100 } } },
       scales: { y: { beginAtZero: true } }
     }
   });
-
-  chartResponse = new Chart(document.getElementById('chartResponse'), {
+  chartResponse = new Chart(document.getElementById(idResponse), {
     type: 'bar',
     data: {
       labels: labels,
@@ -387,53 +433,66 @@ function renderChart(data, type) {
       }]
     },
     options: {
-      responsive: true,
+      responsive: false,
       animation: { duration: 800 },
-      plugins: {
-        annotation: { annotations: { lineResponse } }
-      },
+      plugins: { annotation: { annotations: { lineResponse } } },
       scales: { y: { beginAtZero: true } }
     }
   });
+
+  if(type === "eksternal") {
+    chartCapaianEksternal = chartCapaian;
+    chartResponseEksternal = chartResponse;
+  } else {
+    chartCapaianInternal = chartCapaian;
+    chartResponseInternal = chartResponse;
+  }
+}
+
+// Spoiler/Collapsible untuk grafik
+function toggleSpoiler(id) {
+  var el = document.getElementById(id);
+  if(el.style.display === "none" || el.style.display === "") el.style.display = "block";
+  else el.style.display = "none";
 }
 
 function downloadExcel() {
-  if (!allData.length) return;
-  const instansi = document.getElementById('instansiFilter').value || 'ALL';
-
-  let exportData;
-  if (instansi === "SELURUH K/L/PD PESERTA SPI 2024") {
-    exportData = allData.filter(row =>
-      (row.unitkerja === "SELURUH K/L/PD PESERTA SPI 2024" || row.unitkerja === "Total")
-    ).map(row => {
-      const r = {};
-      exportColumns.forEach(k => r[columnMap[k]] = row[k]);
-      return r;
-    });
+  const instansi = (document.getElementById('instansiFilter').value || '').toLowerCase();
+  let exportData = [];
+  if(instansi === "" || instansi === "seluruh k/l/pd peserta spi 2024") {
+    // EXPORT: Seluruh baris dengan unitkerja "TOTAL" (case-insensitive) dari internal & eksternal
+    exportData = [
+      ...allData.internal.filter(row => String(row.unitkerja || '').toLowerCase() === "total")
+        .map(row => ({ Tipe: 'Internal', ...row })),
+      ...allData.eksternal.filter(row => String(row.unitkerja || '').toLowerCase() === "total")
+        .map(row => ({ Tipe: 'Eksternal', ...row }))
+    ];
   } else {
-    if (!filteredData.length) return;
-    exportData = filteredData.map(row => {
-      const r = {};
-      exportColumns.forEach(k => r[columnMap[k]] = row[k]);
-      return r;
-    });
+    exportData = [
+      ...filteredData.internal.map(row => ({ Tipe: 'Internal', ...row })),
+      ...filteredData.eksternal.map(row => ({ Tipe: 'Eksternal', ...row }))
+    ];
   }
-
+  exportData = exportData.map(row => {
+    const r = {};
+    r["Tipe"] = row["Tipe"];
+    exportColumns.forEach(k => r[columnMap[k]] = row[k]);
+    return r;
+  });
   if (!exportData.length) return;
   const worksheet = XLSX.utils.json_to_sheet(exportData);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "DATA");
-  XLSX.writeFile(workbook, `DATA_RESPONSE_RATE_2024_${instansi.replace(/\s+/g, "_")}.xlsx`);
+  XLSX.writeFile(workbook, `DATA_RESPONSE_RATE_2024_FILTERED.xlsx`);
 }
 
 function downloadPDF() {
   const element = document.getElementById("dashboard-content");
-  const instansi = document.getElementById("instansiFilter").value || "ALL";
   html2pdf()
     .from(element)
     .set({
       margin: [0, 0, 0, 0],
-      filename: `DATA_RESPONSE_RATE_2024_${instansi.replace(/\s+/g, "_")}.pdf`,
+      filename: `DATA_RESPONSE_RATE_2024_FILTERED.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2, scrollY: 0 },
       jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
@@ -442,13 +501,20 @@ function downloadPDF() {
     .save();
 }
 
+// INIT: load eksternal > internal > populate filter > apply filter default
 window.onload = function() {
-  loadDataset('eksternal');
+  loadDataset('eksternal', function() {
+    loadDataset('internal', function() {
+      populateInstansiList(); // hanya dari internal
+      document.getElementById('instansiFilter').value = "SELURUH K/L/PD PESERTA SPI 2024";
+      applyFilterAll();
+    });
+  });
 };
 </script>
 
 <footer class="text-center small text-muted mt-5 mb-3">
-    v2.11<br> 
+    v2.13<br> 
     © Hak Cipta Milik Tim SPI 2025 KPK RI<br>
     Segala Penggunaan Data dari <i>dashboard</i> ini harus seizin Direktorat Monitoring KPK RI. 
 </footer>
