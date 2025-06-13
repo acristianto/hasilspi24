@@ -8,22 +8,8 @@
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css" />
   <style>
     body { background: #fff; }
-    .custom-card {
-      background: linear-gradient(140deg, #f7fafc 60%, #e9f1fb 100%);
-      border-radius: 18px;
-      box-shadow: 0 4px 20px rgba(44, 62, 80, 0.09);
-      padding: 1.5rem;
-      margin-bottom: 2.5rem;
-      border: none;
-    }
-    .dimensi-title {
-      font-weight: bold;
-      font-size: 1.08rem;
-      margin-top: 20px;
-      margin-bottom: 8px;
-      color: #234e88;
-      letter-spacing: 0.2px;
-    }
+    .custom-card { background: linear-gradient(140deg, #f7fafc 60%, #e9f1fb 100%); border-radius: 18px; box-shadow: 0 4px 20px rgba(44, 62, 80, 0.09); padding: 1.5rem; margin-bottom: 2.5rem; border: none; }
+    .dimensi-title { font-weight: bold; font-size: 1.08rem; margin-top: 20px; margin-bottom: 8px; color: #234e88; letter-spacing: 0.2px; }
     .dimensi-divider { border-bottom: 2px solid #b8c3e2; margin-bottom: 12px;}
     .table-sm th, .table-sm td { font-size: 0.98rem; }
     .custom-table thead { background: #eef3fb; }
@@ -37,25 +23,14 @@
     .rekap-card { background: #eef3fb; border-radius: 14px; padding: 1rem 1.4rem; box-shadow: 0 2px 12px rgba(44,62,80,0.05); margin-bottom: 1.7rem; }
     .rekap-table th { background: #e0eafc; }
     .rekap-title { font-size:1.05rem;font-weight:600;color:#254278;letter-spacing:0.3px;margin-bottom:10px; }
-    .spinner-overlay {
-      position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
-      background: rgba(255,255,255,0.7); z-index: 9999;
-      display: flex; align-items: center; justify-content: center;
-      transition: opacity 0.3s;
-    }
+    .spinner-overlay { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(255,255,255,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.3s;}
     .spinner-border { width: 3rem; height: 3rem; }
-    /* Navbar and sidebar */
     .header-nav { display: flex; align-items: center; justify-content: space-between; background: #fff; border-bottom: 1.5px solid #e5e7eb; margin-bottom: 14px; padding: 9px 0 2px 0;}
     .header-nav .logo-kpk { height: 40px; margin-left: 18px;}
     .header-nav .logo-spi { height: 40px; margin-right: 18px;}
     .tab-menu { display: flex; gap: 48px; }
-    .tab-menu a {
-      display: inline-block; font-size: 1.12rem; font-weight: 600; color: #425466; text-decoration: none;
-      padding: 11px 0 8px 0; border-bottom: 2.5px solid transparent;
-      transition: color 0.18s, border-bottom 0.18s; background: none;
-    }
-    .tab-menu a.active,
-    .tab-menu a:hover { color: #206bc4; }
+    .tab-menu a { display: inline-block; font-size: 1.12rem; font-weight: 600; color: #425466; text-decoration: none; padding: 11px 0 8px 0; border-bottom: 2.5px solid transparent; transition: color 0.18s, border-bottom 0.18s; background: none;}
+    .tab-menu a.active, .tab-menu a:hover { color: #206bc4; }
     .tab-menu a.active { border-bottom: 2.5px solid #206bc4; color: #206bc4; cursor: default;}
     .mobile-nav { display: none; }
     .sidebar-overlay { display: none; position: fixed; z-index: 1010; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(50,70,90,0.25); transition: 0.25s; }
@@ -65,8 +40,7 @@
     .sidebar-header img { height: 35px; }
     .sidebar-menu { display: flex; flex-direction: column; gap: 2px;}
     .sidebar-menu a { display: block; padding: 11px 12px 9px 12px; font-size: 1.07rem; font-weight: 600; color: #425466; text-decoration: none; border-radius: 6px; margin-bottom: 2px; border-left: 3px solid transparent; transition: color 0.16s, border-left 0.16s, background 0.17s;}
-    .sidebar-menu a.active,
-    .sidebar-menu a:hover { color: #206bc4; background: #f5faff; border-left: 3px solid #206bc4;}
+    .sidebar-menu a.active, .sidebar-menu a:hover { color: #206bc4; background: #f5faff; border-left: 3px solid #206bc4;}
     .burger { display: none; background: none; border: none; font-size: 2.1rem; color: #37517e; margin-left: 12px; margin-right: 10px; cursor: pointer; line-height: 1; transition: color 0.14s;}
     @media (max-width: 991.98px) {
       .header-nav { display: none; }
@@ -81,6 +55,7 @@
       .tab-menu a { font-size: 1rem; padding: 8px 0 5px 0; }
       .header-nav .logo-kpk, .header-nav .logo-spi { height: 32px; }
     }
+    #export-rekap-btn { margin-bottom: 1.2rem; }
   </style>
 </head>
 <body>
@@ -130,6 +105,9 @@
         <label for="searchInstansi" class="form-label">Ketik Nama Instansi yang akan dianalisis:</label>
         <input id="searchInstansi" class="form-control" placeholder="Cari instansi..." autocomplete="off" />
       </div>
+      <button id="export-rekap-btn" class="btn btn-success d-block ms-auto" type="button" style="display:none;">
+        Simpan Hasil Rekap ke Excel
+      </button>
       <div id="resultTable"></div>
     </div>
   </div>
@@ -167,6 +145,9 @@
 
     let tableData = [];
     let uniqueInstansi = [];
+    let githubCsvData = [];
+    let githubCsvDataFetched = false; // menandakan sudah pernah load csv github
+
     const shownCols = [
         "Instansi",
         "Dimensi",
@@ -223,7 +204,6 @@
     function hideSpinner()   { $("#spinner-overlay").hide(); }
 
     const csvGithubUrl = 'https://raw.githubusercontent.com/timotiushps/hasilspi24/main/dataset_single_no_dimensi.csv';
-    let githubCsvData = [];
 
     // Mapping Dimensi → KODE_3
     const dimensiMappingList = [
@@ -301,6 +281,11 @@
         $('#searchInstansi').val("");
         updateAutocomplete();
         $('#resultTable').html("");
+        // Tampilkan tombol export jika sudah ada data dan csv github sudah pernah di-fetch
+        if (tableData.length > 0) {
+            $("#export-rekap-btn").show();
+            if (!githubCsvDataFetched) fetchGithubCsvForExport();
+        }
     }
 
     function updateAutocomplete() {
@@ -321,11 +306,26 @@
             const csvText = await response.text();
             const results = Papa.parse(csvText, { header: true, skipEmptyLines: true });
             githubCsvData = results.data;
+            githubCsvDataFetched = true;
             showCombinedTables(instansiTerpilih);
         } catch (error) {
             $('#resultTable').html(`<div class="alert alert-danger mt-3">Error saat load data GitHub: ${error.message}</div>`);
         }
         hideSpinner();
+    }
+
+    // Load github csv hanya sekali untuk kebutuhan ekspor rekap semua instansi
+    async function fetchGithubCsvForExport() {
+        try {
+            const response = await fetch(csvGithubUrl);
+            if (!response.ok) throw new Error('Gagal fetch data dari GitHub: ' + response.status);
+            const csvText = await response.text();
+            const results = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+            githubCsvData = results.data;
+            githubCsvDataFetched = true;
+        } catch (error) {
+            alert("Gagal memuat data Github untuk ekspor rekap: " + error.message);
+        }
     }
 
     function normal(str) {
@@ -446,6 +446,78 @@
 
         $('#resultTable').html(html);
     }
+
+    // ---- FUNGSI EKSPOR REKAP ----
+    function buildRekapForAllInstansi() {
+        if (!githubCsvData || githubCsvData.length === 0 || !tableData || tableData.length === 0) {
+            alert('Data belum siap. Silakan unggah file RTL dan pastikan data Github sudah termuat.');
+            return [];
+        }
+        let allInstansi = [...new Set(tableData.map(r => r["Instansi"]).filter(x => x))];
+        // Per instansi, susun rekap tabel
+        let hasilRekap = [];
+        allInstansi.forEach(instansi => {
+            let rowsManual = tableData.filter(r => r["Instansi"] === instansi);
+            let dimensiManualArr = [...new Set(rowsManual.map(r => (r["Dimensi"]||"").trim()).filter(d => d))];
+            let dimensiManual = [...new Set(rowsManual.map(r => normal(r["Dimensi"])).filter(d => d))];
+            let ghRows = githubCsvData.filter(r =>
+                r["Nama Instansi"] && normal(r["Nama Instansi"]) === normal(instansi)
+            );
+            // Ambil semua KODE_2=KODE_3 & Value24<78 yang belum ada di dimensi manual
+            let kode3NotInManualArr = [];
+            ghRows.forEach(row => {
+                let v = parseFloat(row["Value24"]);
+                let kode3Norm = normal(row["KODE_3"]);
+                let kode2Norm = normal(row["KODE_2"]);
+                if (!row["KODE_3"] || kode3Norm === "" || kode3Norm === "integritas instansi") return;
+                if (kode3Norm === kode2Norm && !isNaN(v) && v < 78) {
+                    let mappedDimensi = kode3ToDimensiManual[kode3Norm];
+                    let covered = false;
+                    if (mappedDimensi) {
+                        let mappedDimensiNorm = normal(mappedDimensi);
+                        if (dimensiManual.includes(mappedDimensiNorm)) covered = true;
+                    }
+                    if (!covered && !kode3NotInManualArr.includes(row["KODE_3"])) {
+                        kode3NotInManualArr.push(row["KODE_3"]);
+                    }
+                }
+            });
+            // Normalisasi jumlah baris (panjang) pada array untuk disimpan ke Excel (agar sejajar)
+            let maxLen = Math.max(dimensiManualArr.length, kode3NotInManualArr.length);
+            for (let i=0; i<maxLen; i++) {
+                hasilRekap.push({
+                    "Nama Instansi": instansi,
+                    "Dimensi Sudah Ada di RTL": dimensiManualArr[i] || "",
+                    "Dimensi Belum Ada di RTL": kode3NotInManualArr[i] || ""
+                });
+            }
+            // Jika tidak ada satupun dimensi/yang belum tercover, tetap buat satu baris (agar tidak hilang)
+            if (maxLen === 0) {
+                hasilRekap.push({
+                    "Nama Instansi": instansi,
+                    "Dimensi Sudah Ada di RTL": "",
+                    "Dimensi Belum Ada di RTL": ""
+                });
+            }
+        });
+        return hasilRekap;
+    }
+
+    $("#export-rekap-btn").on("click", function() {
+        if (!githubCsvDataFetched) {
+            alert("Data Github belum dimuat, silakan klik instansi apa saja untuk inisialisasi.");
+            return;
+        }
+        let data = buildRekapForAllInstansi();
+        if (data.length === 0) {
+            alert("Belum ada data rekap untuk diekspor.");
+            return;
+        }
+        let ws = XLSX.utils.json_to_sheet(data);
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Rekap Dimensi");
+        XLSX.writeFile(wb, "rekap_cakupan_dimensi_rtl_spi2024.xlsx");
+    });
   </script>
 </body>
 </html>
