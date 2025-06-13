@@ -23,8 +23,27 @@
     .rekap-card { background: #eef3fb; border-radius: 14px; padding: 1rem 1.4rem; box-shadow: 0 2px 12px rgba(44,62,80,0.05); margin-bottom: 1.7rem; }
     .rekap-table th { background: #e0eafc; }
     .rekap-title { font-size:1.05rem;font-weight:600;color:#254278;letter-spacing:0.3px;margin-bottom:10px; }
-    .spinner-overlay { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(255,255,255,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.3s;}
+    .spinner-overlay {
+      position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
+      background: rgba(255,255,255,0.78); z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.3s;
+    }
+    .spinner-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
     .spinner-border { width: 3rem; height: 3rem; }
+    .spinner-status-text {
+      margin-top: 18px;
+      text-align: center;
+      font-weight: bold;
+      color: #206bc4;
+      font-size: 1.11rem;
+      letter-spacing: 0.2px;
+    }
     .header-nav { display: flex; align-items: center; justify-content: space-between; background: #fff; border-bottom: 1.5px solid #e5e7eb; margin-bottom: 14px; padding: 9px 0 2px 0;}
     .header-nav .logo-kpk { height: 40px; margin-left: 18px;}
     .header-nav .logo-spi { height: 40px; margin-right: 18px;}
@@ -114,9 +133,9 @@
 
   <!-- Spinner loading (hidden by default) -->
   <div id="spinner-overlay" class="spinner-overlay" style="display:none;">
-    <div>
+    <div class="spinner-content">
       <div class="spinner-border text-primary" role="status"></div>
-      <div class="mt-3 text-center text-primary fw-bold">Memproses data...</div>
+      <div class="spinner-status-text" id="spinner-status-text">Memproses data...</div>
     </div>
   </div>
 
@@ -146,7 +165,7 @@
     let tableData = [];
     let uniqueInstansi = [];
     let githubCsvData = [];
-    let githubCsvDataFetched = false; // menandakan sudah pernah load csv github
+    let githubCsvDataFetched = false;
 
     const shownCols = [
         "Instansi",
@@ -199,8 +218,11 @@
       return html;
     }
 
-    // Spinner
-    function showSpinner()  { $("#spinner-overlay").show(); }
+    // Spinner: now supports status text!
+    function showSpinner(status) {
+      $("#spinner-status-text").text(status || "Memproses data...");
+      $("#spinner-overlay").show();
+    }
     function hideSpinner()   { $("#spinner-overlay").hide(); }
 
     const csvGithubUrl = 'https://raw.githubusercontent.com/timotiushps/hasilspi24/main/dataset_single_no_dimensi.csv';
@@ -252,7 +274,7 @@
     });
 
     $('#excelFileInput').on('change', function(e) {
-        showSpinner();
+        showSpinner("Memproses data...");
         const file = e.target.files[0];
         if (!file) { hideSpinner(); return; }
         const reader = new FileReader();
@@ -281,7 +303,6 @@
         $('#searchInstansi').val("");
         updateAutocomplete();
         $('#resultTable').html("");
-        // Tampilkan tombol export jika sudah ada data dan csv github sudah pernah di-fetch
         if (tableData.length > 0) {
             $("#export-rekap-btn").show();
             if (!githubCsvDataFetched) fetchGithubCsvForExport();
@@ -299,7 +320,7 @@
     }
 
     async function loadGithubCsvData(instansiTerpilih) {
-        showSpinner();
+        showSpinner("Memuat data GitHub...");
         try {
             const response = await fetch(csvGithubUrl);
             if (!response.ok) throw new Error('Gagal fetch data dari GitHub: ' + response.status);
@@ -314,8 +335,8 @@
         hideSpinner();
     }
 
-    // Load github csv hanya sekali untuk kebutuhan ekspor rekap semua instansi
     async function fetchGithubCsvForExport() {
+        showSpinner("Memuat data GitHub...");
         try {
             const response = await fetch(csvGithubUrl);
             if (!response.ok) throw new Error('Gagal fetch data dari GitHub: ' + response.status);
@@ -326,6 +347,7 @@
         } catch (error) {
             alert("Gagal memuat data Github untuk ekspor rekap: " + error.message);
         }
+        hideSpinner();
     }
 
     function normal(str) {
@@ -369,17 +391,13 @@
                 }
             }
         });
-        // Untuk setiap KODE_3 di atas, kelompokkan SEMUA baris KODE_2 yang Value24<78 (meskipun KODE_2 != KODE_3)
         kode3NotInManualArr.forEach(kode3 => {
           kode3NotInManual[kode3] = ghRows.filter(row => row["KODE_3"] === kode3 && parseFloat(row["Value24"]) < 78);
         });
 
         let html = `<div class="mb-2 mt-4 fw-bold">Data untuk Instansi: <span class="text-primary">${instansiTerpilih}</span></div>`;
-
-        // === TABEL REKAPITULASI CAKUPAN ===
         html += showRekapTable(dimensiManualArr, kode3NotInManualArr);
 
-        // --- TABEL MANUAL (per Dimensi) ---
         let uniqueDimensi = [...new Set(rowsManual.map(r => r["Dimensi"]).filter(d => d))];
         uniqueDimensi.forEach(dimensi => {
             let groupRows = rowsManual.filter(r => (r["Dimensi"] || "").trim() === dimensi);
@@ -403,7 +421,6 @@
             `;
         });
 
-        // --- TABEL CSV GITHUB yang tidak tercover Rencana Tindak Lanjut ---
         const kode3Keys = Object.keys(kode3NotInManual).filter(k => kode3NotInManual[k] && kode3NotInManual[k].length > 0);
         if (kode3Keys.length > 0) {
             html += `<div class="label-warning">Variabel dari Dimensi yang belum ada dalam Rencana Tindak Lanjut</div>`;
@@ -447,14 +464,12 @@
         $('#resultTable').html(html);
     }
 
-    // ---- FUNGSI EKSPOR REKAP ----
     function buildRekapForAllInstansi() {
         if (!githubCsvData || githubCsvData.length === 0 || !tableData || tableData.length === 0) {
             alert('Data belum siap. Silakan unggah file RTL dan pastikan data Github sudah termuat.');
             return [];
         }
         let allInstansi = [...new Set(tableData.map(r => r["Instansi"]).filter(x => x))];
-        // Per instansi, susun rekap tabel
         let hasilRekap = [];
         allInstansi.forEach(instansi => {
             let rowsManual = tableData.filter(r => r["Instansi"] === instansi);
@@ -463,7 +478,6 @@
             let ghRows = githubCsvData.filter(r =>
                 r["Nama Instansi"] && normal(r["Nama Instansi"]) === normal(instansi)
             );
-            // Ambil semua KODE_2=KODE_3 & Value24<78 yang belum ada di dimensi manual
             let kode3NotInManualArr = [];
             ghRows.forEach(row => {
                 let v = parseFloat(row["Value24"]);
@@ -482,7 +496,6 @@
                     }
                 }
             });
-            // Normalisasi jumlah baris (panjang) pada array untuk disimpan ke Excel (agar sejajar)
             let maxLen = Math.max(dimensiManualArr.length, kode3NotInManualArr.length);
             for (let i=0; i<maxLen; i++) {
                 hasilRekap.push({
@@ -491,7 +504,6 @@
                     "Dimensi Belum Ada di RTL": kode3NotInManualArr[i] || ""
                 });
             }
-            // Jika tidak ada satupun dimensi/yang belum tercover, tetap buat satu baris (agar tidak hilang)
             if (maxLen === 0) {
                 hasilRekap.push({
                     "Nama Instansi": instansi,
@@ -508,15 +520,20 @@
             alert("Data Github belum dimuat, silakan klik instansi apa saja untuk inisialisasi.");
             return;
         }
-        let data = buildRekapForAllInstansi();
-        if (data.length === 0) {
-            alert("Belum ada data rekap untuk diekspor.");
-            return;
-        }
-        let ws = XLSX.utils.json_to_sheet(data);
-        let wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Rekap Dimensi");
-        XLSX.writeFile(wb, "rekap_cakupan_dimensi_rtl_spi2024.xlsx");
+        showSpinner("Menyimpan rekap ke Excel...");
+        setTimeout(function() { // memberi waktu spinner muncul
+            let data = buildRekapForAllInstansi();
+            if (data.length === 0) {
+                hideSpinner();
+                alert("Belum ada data rekap untuk diekspor.");
+                return;
+            }
+            let ws = XLSX.utils.json_to_sheet(data);
+            let wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Rekap Dimensi");
+            XLSX.writeFile(wb, "rekap_cakupan_dimensi_rtl_spi2024.xlsx");
+            setTimeout(hideSpinner, 500); // spinner disembunyikan sedikit setelah proses selesai
+        }, 100); // minimal delay supaya spinner benar2 terlihat
     });
   </script>
 </body>
