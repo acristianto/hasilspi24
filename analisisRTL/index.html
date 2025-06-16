@@ -320,32 +320,32 @@
     }
 
     async function loadGithubCsvData(instansiTerpilih) {
-        showSpinner("Memuat data GitHub...");
+        showSpinner("Memuat data Pembanding...");
         try {
             const response = await fetch(csvGithubUrl);
-            if (!response.ok) throw new Error('Gagal fetch data dari GitHub: ' + response.status);
+            if (!response.ok) throw new Error('Gagal memuat data: ' + response.status);
             const csvText = await response.text();
             const results = Papa.parse(csvText, { header: true, skipEmptyLines: true });
             githubCsvData = results.data;
             githubCsvDataFetched = true;
             showCombinedTables(instansiTerpilih);
         } catch (error) {
-            $('#resultTable').html(`<div class="alert alert-danger mt-3">Error saat load data GitHub: ${error.message}</div>`);
+            $('#resultTable').html(`<div class="alert alert-danger mt-3">Error saat memuat data: ${error.message}</div>`);
         }
         hideSpinner();
     }
 
     async function fetchGithubCsvForExport() {
-        showSpinner("Memuat data GitHub...");
+        showSpinner("Memuat data Pembanding...");
         try {
             const response = await fetch(csvGithubUrl);
-            if (!response.ok) throw new Error('Gagal fetch data dari GitHub: ' + response.status);
+            if (!response.ok) throw new Error('Gagal memuat data: ' + response.status);
             const csvText = await response.text();
             const results = Papa.parse(csvText, { header: true, skipEmptyLines: true });
             githubCsvData = results.data;
             githubCsvDataFetched = true;
         } catch (error) {
-            alert("Gagal memuat data Github untuk ekspor rekap: " + error.message);
+            alert("Gagal memuat data pembanding untuk ekspor rekap: " + error.message);
         }
         hideSpinner();
     }
@@ -466,7 +466,7 @@
 
     function buildRekapForAllInstansi() {
         if (!githubCsvData || githubCsvData.length === 0 || !tableData || tableData.length === 0) {
-            alert('Data belum siap. Silakan unggah file RTL dan pastikan data Github sudah termuat.');
+            alert('Data belum siap. Silakan unggah file RTL dan pastikan data pemnbanding sudah termuat.');
             return [];
         }
         let allInstansi = [...new Set(tableData.map(r => r["Instansi"]).filter(x => x))];
@@ -517,7 +517,7 @@
 
     $("#export-rekap-btn").on("click", function() {
         if (!githubCsvDataFetched) {
-            alert("Data Github belum dimuat, silakan klik instansi apa saja untuk inisialisasi.");
+            alert("Data Pembanding belum dimuat, silakan klik instansi apa saja untuk inisialisasi.");
             return;
         }
         showSpinner("Menyimpan rekap ke Excel...");
