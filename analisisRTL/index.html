@@ -1,6 +1,46 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+<!-- Firebase SDKs -->
+<script type="module">
+  // Firebase SDK
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  // Ganti dengan config Firebase project lo
+  const firebaseConfig = {
+    apiKey: "ISI_API_KEY_LO",
+    authDomain: "ISI_PROJECT_ID.firebaseapp.com",
+    projectId: "ISI_PROJECT_ID",
+    appId: "ISI_APP_ID",
+  };
+
+  // Init Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // Cek status login
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      console.log("✅ Logged in as:", user.email);
+    } else {
+      // Belum login, redirect ke login page
+      window.location.href = "login.html";
+    }
+  });
+
+  // OPTIONAL: Logout handler
+  window.logout = function() {
+    signOut(auth).then(() => {
+      window.location.href = "login.html";
+    });
+  };
+</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Analisis RTL Hasil SPI 2024</title>
